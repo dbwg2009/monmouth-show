@@ -821,3 +821,105 @@ body {
   padding: var(--sp-8) var(--sp-4);
   font-size: 0.95rem;
 }
+
+/* ── Export / print toolbar ─────────────────────────────────────────────────── */
+
+.tab-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.tab-heading-row .tab-heading {
+  padding: 0;
+}
+
+.export-actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+.btn--sm {
+  font-size: 0.8rem;
+  padding: var(--sp-1) var(--sp-3);
+  min-height: 36px;
+}
+
+/* ── Print styles (run-of-day export) ──────────────────────────────────────── */
+
+@media print {
+  .topbar,
+  .tab-bar,
+  .btn,
+  .export-actions,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+  .tab-heading {
+    font-size: 16pt;
+    font-weight: 700;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #000;
+    padding-bottom: 4pt;
+  }
+
+  .tab-heading-row {
+    padding: 0 0 8pt 0;
+  }
+
+  .timeline-list {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .timeline-row {
+    display: table-row;
+    border-bottom: 0.5pt solid #ccc;
+  }
+
+  .timeline-row__time,
+  .timeline-row__name {
+    display: table-cell;
+    padding: 4pt 8pt;
+    vertical-align: middle;
+  }
+
+  .timeline-row__time {
+    font-family: monospace;
+    font-size: 10pt;
+    white-space: nowrap;
+    width: 110pt;
+    color: #333;
+  }
+
+  .timeline-row--gap {
+    color: #666;
+    font-style: italic;
+  }
+
+  .badge {
+    display: none;
+  }
+
+  .act-card__details,
+  .task-group,
+  .emails-list,
+  .settings-form {
+    display: none !important;
+  }
+}

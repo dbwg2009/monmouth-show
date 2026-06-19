@@ -245,6 +245,61 @@ app.patch('/settings/:key', async (c) => {
   return c.json({ ok: true, data: { key, value } });
 });
 
+// ── iCal feed ─────────────────────────────────────────────────────────────────
+
+app.get('/ical', async (c) => {
+  const db = createDb(c.env.DB);
+  const slots = await db.select().from(timelineSlots).orderBy(asc(timelineSlots.sortOrder));
+
+  function pad(n: number) { return String(n).padStart(2, '0'); }
+
+  function toIcalDt(date: string, time: string): string {
+    // date = "yyyy-mm-dd", time = "HH:MM" → "yyyymmddTHHMM00"
+    const [y, m, d] = date.split('-');
+    const [hh, mm] = time.split(':');
+    return `${y}${m}${d}T${hh}${mm}00`;
+  }
+
+  const uid_base = 'monmouth-show-2026@showrunner';
+  const now = new Date();
+  const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+  const events = slots.map((s) => {
+    const summary = s.isGap
+      ? `[GAP] ${s.gapReason ?? s.actName}`
+      : s.actName;
+    return [
+      'BEGIN:VEVENT',
+      `UID:${uid_base}-${s.id}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART;TZID=Europe/London:${toIcalDt(s.date, s.startTime)}`,
+      `DTEND;TZID=Europe/London:${toIcalDt(s.date, s.endTime)}`,
+      `SUMMARY:${summary}`,
+      ...(s.isGap ? ['DESCRIPTION:No music — livestock/animals on site'] : []),
+      'END:VEVENT',
+    ].join('\r\n');
+  });
+
+  const ical = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//ShowRunner//Monmouthshire Show 2026//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Monmouthshire Show 2026 — Band Stand',
+    'X-WR-TIMEZONE:Europe/London',
+    ...events,
+    'END:VCALENDAR',
+  ].join('\r\n');
+
+  return new Response(ical, {
+    headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="monmouth-show-2026.ics"',
+    },
+  });
+});
+
 // ── Fallbacks ─────────────────────────────────────────────────────────────────
 
 app.notFound((c) => c.json({ ok: false, error: 'Not found' }, 404));

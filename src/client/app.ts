@@ -216,7 +216,21 @@ function loadTab(tab: Tab): void {
 // ── Timeline tab ─────────────────────────────────────────────────────────────
 
 function renderTimeline(container: HTMLElement, viewer: Viewer): void {
-  container.appendChild(el('h2', { class: 'tab-heading' }, 'Timeline'));
+  const heading = el('div', { class: 'tab-heading-row' });
+  heading.appendChild(el('h2', { class: 'tab-heading' }, 'Timeline'));
+  const exportRow = el('div', { class: 'export-actions' });
+  const icalLink = el('a', {
+    class: 'btn btn--secondary btn--sm',
+    href: '/api/ical',
+    download: 'monmouth-show-2026.ics',
+  }, '📅 iCal');
+  const printBtn = el('button', { class: 'btn btn--secondary btn--sm', 'data-no-print': '' }, '🖨 Print');
+  printBtn.addEventListener('click', () => window.print());
+  exportRow.appendChild(icalLink);
+  exportRow.appendChild(printBtn);
+  heading.appendChild(exportRow);
+  container.appendChild(heading);
+
   const spin = spinner();
   container.appendChild(spin);
 
