@@ -1,0 +1,6 @@
+# Copy to .dev.vars and fill in values for local development.
+# Never commit .dev.vars — it is gitignored.
+
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REFRESH_TOKEN=

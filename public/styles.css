@@ -1,0 +1,215 @@
+/* ShowRunner — mobile-first base styles */
+/* Full design system built out in Phase 4 */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Palette */
+  --clr-bg:         #0f0f1a;
+  --clr-surface:    #1a1a2e;
+  --clr-surface2:   #252540;
+  --clr-accent:     #e63946;   /* red — urgency / show branding */
+  --clr-accent2:    #457b9d;   /* blue — secondary actions */
+  --clr-text:       #f1f1f5;
+  --clr-text-muted: #9090a8;
+  --clr-border:     #2e2e4a;
+  --clr-success:    #2a9d8f;
+  --clr-warn:       #e9c46a;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing scale */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+
+  /* Radius */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 16px;
+
+  /* Touch target */
+  --min-touch: 44px;
+}
+
+html {
+  font-family: var(--font-sans);
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Person-select screen ──────────────────────────────── */
+.person-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-6);
+  gap: var(--sp-4);
+  text-align: center;
+}
+
+.person-select__title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--clr-text);
+}
+
+.person-select__sub {
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+}
+
+.person-select__prompt {
+  font-size: 1.125rem;
+  margin-top: var(--sp-4);
+}
+
+.person-select__buttons {
+  display: flex;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--sp-2);
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--min-touch);
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--person {
+  background: var(--clr-surface2);
+  color: var(--clr-text);
+  border: 2px solid var(--clr-border);
+  min-width: 110px;
+}
+
+.btn--person:hover,
+.btn--person:focus-visible {
+  border-color: var(--clr-accent2);
+  outline: none;
+}
+
+.btn--primary {
+  background: var(--clr-accent);
+  color: #fff;
+}
+
+.btn--secondary {
+  background: var(--clr-surface2);
+  color: var(--clr-text);
+  border: 1px solid var(--clr-border);
+}
+
+/* ── Top bar ───────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--clr-surface);
+  border-bottom: 1px solid var(--clr-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.topbar__viewer {
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+}
+
+.topbar__switch {
+  background: none;
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text-muted);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: 0.75rem;
+  cursor: pointer;
+  min-height: var(--min-touch);
+}
+
+/* ── Utilities ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Print styles (for run-of-day export, Phase 6) ──────── */
+@media print {
+  .topbar,
+  .btn,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 12pt;
+  }
+}

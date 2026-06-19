@@ -1,0 +1,10 @@
+name = "monmouth-show"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "monmouth-show-db"
+database_id = "9a30ba06-d7cb-4fea-9f05-5a776c2b6ca6"
+migrations_dir = "drizzle/migrations"

@@ -1,0 +1,18 @@
+node_modules/
+.wrangler/
+dist/
+
+# Frontend build artifacts (compiled from src/client/)
+public/app.js
+public/app.js.map
+
+# Cloudflare local dev secrets
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+.idea/

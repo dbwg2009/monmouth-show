@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["@cloudflare/workers-types"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/db", "src/types.ts", "functions", "workers", "scripts"],
+  "exclude": ["node_modules", "src/client"]
+}

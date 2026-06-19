@@ -1,0 +1,33 @@
+{
+  "name": "monmouth-show",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run build:ui -- --watch\" \"wrangler pages dev public --port 8788 --d1=DB\"",
+    "build": "npm run build:ui",
+    "build:ui": "esbuild src/client/app.ts --bundle --outfile=public/app.js --target=es2022 --format=esm",
+    "build:ui:dev": "esbuild src/client/app.ts --bundle --outfile=public/app.js --target=es2022 --format=esm --sourcemap",
+    "deploy": "npm run build && wrangler pages deploy public",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply monmouth-show-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply monmouth-show-db --remote",
+    "db:seed:local": "wrangler d1 execute monmouth-show-db --local --file=drizzle/seed.sql",
+    "db:seed:remote": "wrangler d1 execute monmouth-show-db --remote --file=drizzle/seed.sql",
+    "typecheck": "tsc --noEmit && tsc --noEmit --project tsconfig.workers.json",
+    "oauth:gmail": "npx tsx scripts/gmail-oauth.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.38.3",
+    "hono": "^4.7.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "concurrently": "^9.1.2",
+    "drizzle-kit": "^0.30.4",
+    "esbuild": "^0.25.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "wrangler": "^3.109.3"
+  }
+}
