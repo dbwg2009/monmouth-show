@@ -6,28 +6,28 @@
 INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_phone, needs_pa, mic_count, needs_seats, seats_notes, power_sockets, setup_mins, performer_count, fee_pence, confirmed, notes, website_url, created_at, updated_at) VALUES
 (
   'Rock Choir',
-  'Stephanie Harris',
-  'atcstephharris@gmail.com',
-  NULL,
-  NULL,
-  1, -- needs PA
-  2, -- conductor mic + backing track input
+  'Karl Montgomery-Williams',
+  'karl.montgomery-williams@rockchoir.com',
+  'events@rockchoir.com',
+  '01252 714276',
+  0, -- brings own speakers/PA
+  1, -- conductor mic only
   0,
   NULL,
-  '1 socket (backing track laptop)',
+  '2 sockets (own speakers + backing track laptop)',
   15,
-  '20-30',
+  '60-80',
   NULL,
   1,
-  'Performing two sets: 10:00–10:30 and 14:00–14:30. Bring own backing tracks on laptop. Check PA levels before first set.',
+  'Brings own PA/speakers — no house PA needed. Conductor mic required. Two sets: 10:00–10:30 and 14:00–14:30. Bring own backing tracks on laptop. Check levels before first set.',
   'https://www.rockchoir.com',
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
 ),
 (
   'Monmouth Town Band',
-  NULL,
-  NULL,
+  'Jeremy Cleaves',
+  'jcleaves544@gmail.com',
   NULL,
   NULL,
   0, -- acoustic brass band, no PA needed
@@ -46,10 +46,10 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
 ),
 (
   'Male Voice Choir',
+  'Stuart Baber',
+  'mon.mvc@gmail.com',
   NULL,
-  NULL,
-  NULL,
-  NULL,
+  '07554 545834',
   1, -- needs PA for outdoor projection
   1, -- conductor/director mic
   1,
@@ -59,15 +59,15 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   '40',
   NULL,
   1,
-  'Longest slot: 12:00–13:00. Will likely have own conductor. Confirm PA requirements closer to date.',
+  'Contact: Stuart Baber (Secretary). Also Ian MacIntyre 07554 545834. Longest slot: 12:00–13:00. Confirm PA requirements closer to date.',
   NULL,
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
 ),
 (
   'Monmouth Town Band (2nd set)',
-  NULL,
-  NULL,
+  'Jeremy Cleaves',
+  'jcleaves544@gmail.com',
   NULL,
   NULL,
   0,
@@ -86,29 +86,29 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
 ),
 (
   'Vipers and Guests',
+  'Tony Summers',
+  'tonysummers967@gmail.com',
   NULL,
-  NULL,
-  NULL,
-  NULL,
+  '07840440304',
   1, -- band with full backline
   4, -- vocals x2, guitar, bass (DI boxes)
   0,
   NULL,
   '4 sockets (guitar amp, bass amp, keyboard, mixer)',
   30,
-  '5-8',
-  NULL,
-  0,
-  'Rock/covers band. Longest setup — allow full 30 min. Confirm backline requirements. Slot 14:45–15:30.',
+  '7',
+  17500,
+  1,
+  'Rock/covers band. Fee: £175. Longest setup — allow full 30 min. Confirm backline requirements. Slot 14:45–15:30.',
   NULL,
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
 ),
 (
   'Crossroads',
-  NULL,
-  NULL,
-  NULL,
+  'Averil MacDonald',
+  'a.m.macdonald@reading.ac.uk',
+  'tonyforster55@icloud.com',
   NULL,
   1,
   3, -- lead vocal, rhythm guitar/vocal, lead guitar
@@ -116,11 +116,11 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   NULL,
   '3 sockets (2x guitar amp, mixer)',
   20,
-  '3-4',
+  '4',
   NULL,
-  0,
-  'Final act, plays to close of show (16:00 onwards). Confirm end time on the day.',
-  NULL,
+  1,
+  'Final act, plays to close of show (16:00 onwards). Contacts: Averil MacDonald & Tony Forster. Bring own PA. No fee — voluntary. Confirm end time on the day.',
+  'https://monstock.org/band/crossroads/',
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
 );
@@ -143,17 +143,18 @@ INSERT INTO timeline_slots (act_id, act_name, start_time, end_time, date, is_gap
 
 INSERT INTO tasks (title, description, assignee, due_date, done, sort_order, created_at, updated_at) VALUES
 -- Pre-show admin
-('Confirm all acts are booked', 'Get written confirmation from Vipers+Guests and Crossroads', 'Dan', '2026-08-01', 0, 10, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Confirm all acts are booked', 'Written confirmation from all six acts', 'Dan', '2026-08-01', 0, 10, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 ('Collect tech riders from all acts', 'PA requirements, mic counts, power sockets, backline needs', 'Dan', '2026-08-07', 0, 20, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
-('Arrange PA system hire or confirm in-house PA', NULL, 'Dan', '2026-08-07', 0, 30, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Arrange PA system hire or confirm in-house PA', 'MVC and Vipers need house PA; Rock Choir and Crossroads bring own', 'Dan', '2026-08-07', 0, 30, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 ('Source chairs for Monmouth Town Band (25 seats)', 'Confirm with show organisers who is providing seating', 'Jacob', '2026-08-10', 0, 40, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Pay Vipers and Guests (£175)', 'Fee agreed: £175. Arrange payment method with Tony Summers', 'Dan', '2026-08-14', 0, 45, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 ('Print run-of-day schedule for all volunteers', 'One copy per person + spares', 'Steph', '2026-08-14', 0, 50, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 ('Brief Jacob and Steph on roles for the day', NULL, 'Dan', '2026-08-14', 0, 60, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 -- Day-of setup (pre-show)
 ('Arrive at Band Stand by 08:30 for setup', NULL, 'Dan', '2026-08-16', 0, 100, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
-('Set up PA system and do sound check', 'Test with Rock Choir backing track input + mics', 'Dan', '2026-08-16', 0, 110, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
-('Set out chairs for Monmouth Town Band', '25 chairs + conductor stand, clear after MTB leaves for each gap', 'Jacob', '2026-08-16', 0, 120, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
-('Meet and greet Rock Choir on arrival (09:45)', 'Guide to Band Stand, intro to PA setup', 'Steph', '2026-08-16', 0, 130, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Set up PA system and do sound check', 'Test with Rock Choir conductor mic + laptop input', 'Dan', '2026-08-16', 0, 110, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Set out chairs for Monmouth Town Band', '25 chairs + conductor stand', 'Jacob', '2026-08-16', 0, 120, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
+('Meet and greet Rock Choir on arrival (09:45)', 'Guide to Band Stand, confirm speaker placement', 'Steph', '2026-08-16', 0, 130, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 -- Day-of: between acts
 ('Clear chairs between MTB 1st set and Male Voice Choir', 'MVC need different layout', 'Jacob', '2026-08-16', 0, 200, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 ('Enforce music blackout during Livestock Parade (15:30–15:45)', 'No music, no PA, no soundcheck — animals on site', 'Dan', '2026-08-16', 0, 210, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
@@ -164,5 +165,5 @@ INSERT INTO tasks (title, description, assignee, due_date, done, sort_order, cre
 -- ── Settings ──────────────────────────────────────────────────────────────────
 
 INSERT INTO settings (key, value, updated_at) VALUES
-('gmail_label',    'MonShow',                                                    '2026-06-01T00:00:00.000Z'),
-('gmail_contacts', 'atcstephharris@gmail.com',                                   '2026-06-01T00:00:00.000Z');
+('gmail_label',    'MonShow',                                                                   '2026-06-01T00:00:00.000Z'),
+('gmail_contacts', 'atcstephharris@gmail.com,karl.montgomery-williams@rockchoir.com,tonysummers967@gmail.com,a.m.macdonald@reading.ac.uk,jcleaves544@gmail.com,mon.mvc@gmail.com', '2026-06-01T00:00:00.000Z');
