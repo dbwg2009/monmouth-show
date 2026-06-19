@@ -16,6 +16,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/db", "src/types.ts", "functions", "workers", "scripts"],
+  "include": ["src/db", "src/types.ts", "functions", "workers"],
   "exclude": ["node_modules", "src/client"]
 }
