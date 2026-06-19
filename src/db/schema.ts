@@ -1,4 +1,9 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, check } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+
+const VIEWER_CHECK = sql`IS NULL OR value IN ('Dan','Jacob','Steph')`;
+const viewerCheck = (col: string) =>
+  sql.raw(`${col} IS NULL OR ${col} IN ('Dan','Jacob','Steph')`);
 
 // ── Acts ─────────────────────────────────────────────────────────────────────
 export const acts = sqliteTable('acts', {
@@ -22,7 +27,9 @@ export const acts = sqliteTable('acts', {
   createdAt:      text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt:      text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedBy:      text('updated_by'),
-});
+}, (t) => [
+  check('acts_updated_by_viewer', viewerCheck('updated_by')),
+]);
 
 // ── Timeline slots ────────────────────────────────────────────────────────────
 export const timelineSlots = sqliteTable('timeline_slots', {
@@ -37,7 +44,9 @@ export const timelineSlots = sqliteTable('timeline_slots', {
   sortOrder:  integer('sort_order').notNull().default(0),
   updatedAt:  text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedBy:  text('updated_by'),
-});
+}, (t) => [
+  check('timeline_slots_updated_by_viewer', viewerCheck('updated_by')),
+]);
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────
 export const tasks = sqliteTable('tasks', {
@@ -53,7 +62,11 @@ export const tasks = sqliteTable('tasks', {
   createdAt:   text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedAt:   text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedBy:   text('updated_by'),
-});
+}, (t) => [
+  check('tasks_assignee_viewer',   viewerCheck('assignee')),
+  check('tasks_done_by_viewer',    viewerCheck('done_by')),
+  check('tasks_updated_by_viewer', viewerCheck('updated_by')),
+]);
 
 // ── Gmail threads (synced by cron Worker) ────────────────────────────────────
 export const emailThreads = sqliteTable('email_threads', {
@@ -68,15 +81,15 @@ export const emailThreads = sqliteTable('email_threads', {
 
 // ── Gmail messages ────────────────────────────────────────────────────────────
 export const emailMessages = sqliteTable('email_messages', {
-  id:            integer('id').primaryKey({ autoIncrement: true }),
-  threadId:      integer('thread_id').notNull().references(() => emailThreads.id, { onDelete: 'cascade' }),
+  id:             integer('id').primaryKey({ autoIncrement: true }),
+  threadId:       integer('thread_id').notNull().references(() => emailThreads.id, { onDelete: 'cascade' }),
   gmailMessageId: text('gmail_message_id').notNull().unique(),
-  fromAddr:      text('from_addr').notNull(),
-  toAddrs:       text('to_addrs').notNull(), // JSON string[]
-  subject:       text('subject').notNull(),
-  bodyHtml:      text('body_html'),
-  bodyText:      text('body_text'),
-  sentAt:        text('sent_at').notNull(),
+  fromAddr:       text('from_addr').notNull(),
+  toAddrs:        text('to_addrs').notNull(), // JSON string[]
+  subject:        text('subject').notNull(),
+  bodyHtml:       text('body_html'),
+  bodyText:       text('body_text'),
+  sentAt:         text('sent_at').notNull(),
 });
 
 // ── Settings (key-value) ──────────────────────────────────────────────────────

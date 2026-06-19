@@ -3,9 +3,11 @@
 
 const VIEWER_KEY = 'showrunner_viewer';
 type Viewer = 'Dan' | 'Jacob' | 'Steph';
+const VIEWERS: readonly Viewer[] = ['Dan', 'Jacob', 'Steph'] as const;
 
 function getViewer(): Viewer | null {
-  return (localStorage.getItem(VIEWER_KEY) as Viewer | null);
+  const raw = localStorage.getItem(VIEWER_KEY);
+  return raw && (VIEWERS as readonly string[]).includes(raw) ? (raw as Viewer) : null;
 }
 
 function setViewer(v: Viewer) {

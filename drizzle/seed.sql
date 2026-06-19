@@ -1,0 +1,3 @@
+-- ShowRunner seed data — Monmouthshire Show 2026
+-- Generated in Phase 2. Run via: npm run db:seed:local / db:seed:remote
+-- This file is intentionally empty in Phase 1; full seed added in Phase 2.

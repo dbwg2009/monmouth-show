@@ -30,7 +30,7 @@ npm run dev
 
 ## Project structure
 
-```
+```text
 ├── public/              Static assets served by Pages (HTML, CSS)
 │   └── app.js           Compiled from src/client/app.ts (gitignored)
 ├── src/
@@ -119,13 +119,13 @@ wrangler secret put GMAIL_REFRESH_TOKEN --config workers/gmail-sync/wrangler.tom
    - Create OAuth 2.0 credentials → *Desktop app*
    - Download the client secret JSON; note `client_id` and `client_secret`
 
-2. Set env vars and run the consent script:
+2. Set env vars and run the consent script (**Phase 5 — not yet implemented**):
 
    ```bash
    GMAIL_CLIENT_ID=xxx GMAIL_CLIENT_SECRET=yyy npm run oauth:gmail
    ```
 
-   The script opens a local server, prints a consent URL, and on success prints the `wrangler secret put` commands to store the refresh token.
+   When implemented in Phase 5, the script will open a local server, print a consent URL, and on success output the `wrangler secret put` commands to store the refresh token. Until then, follow the manual OAuth steps in Google's documentation and store the refresh token via `wrangler secret put GMAIL_REFRESH_TOKEN`.
 
 3. The refresh token is stored as a Cloudflare secret — never committed to git.
 
@@ -145,7 +145,7 @@ Stored in D1 `settings` table, editable in the in-app Settings page:
 | `gmail_contacts` | *(see seed)* | Comma-separated email addresses to also include |
 
 The cron Worker builds a Gmail query like:
-```
+```text
 label:MonShow OR from:atcstephharris@gmail.com OR from:...
 ```
 
@@ -155,7 +155,7 @@ label:MonShow OR from:atcstephharris@gmail.com OR from:...
 
 Create `.dev.vars` (gitignored) for local dev:
 
-```
+```env
 GMAIL_CLIENT_ID=your_client_id
 GMAIL_CLIENT_SECRET=your_client_secret
 GMAIL_REFRESH_TOKEN=your_refresh_token

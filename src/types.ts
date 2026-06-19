@@ -9,6 +9,7 @@ export interface Act {
   contactEmail: string | null;
   contactPhone: string | null;
   contactEmail2: string | null;
+  websiteUrl: string | null;
   needsPA: boolean;
   micCount: number;
   needsSeats: boolean;
