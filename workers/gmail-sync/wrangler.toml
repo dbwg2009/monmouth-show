@@ -1,0 +1,17 @@
+name = "monmouth-show-gmail-sync"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "monmouth-show-db"
+database_id = "9a30ba06-d7cb-4fea-9f05-5a776c2b6ca6"
+
+# Secrets set via: wrangler secret put GMAIL_CLIENT_ID --config workers/gmail-sync/wrangler.toml
+# GMAIL_CLIENT_ID
+# GMAIL_CLIENT_SECRET
+# GMAIL_REFRESH_TOKEN
