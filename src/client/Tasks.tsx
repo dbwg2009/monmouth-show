@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Task, Viewer } from '../types.ts';
 import { Drawer, Field, TextInput, TextArea, Toggle, Select, FormSection, DangerBtn } from './Drawer.tsx';
+import { SHOW_DATE, DAY_OF_SHOW_SORT_THRESHOLD } from './constants.ts';
 
 interface Props { viewer: Viewer; }
 
 function Spinner() { return <div className="spinner-wrap"><div className="spinner" /></div>; }
 
 function fmtDate(d: string): string {
+  if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
   const [y, m, day] = d.split('-').map(Number);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${day} ${months[(m ?? 1) - 1]} ${y}`;
+  if (!m || m < 1 || m > 12) return d;
+  return `${day} ${months[m - 1]} ${y}`;
 }
 
 function isOverdue(t: Task, today: string): boolean {
@@ -22,8 +25,8 @@ function groupTasks(tasks: Task[], today: string, showDone: boolean): Group[] {
   const pre: Task[] = [], dayOf: Task[] = [], post: Task[] = [], done: Task[] = [];
   for (const t of tasks) {
     if (t.done) { done.push(t); continue; }
-    if (!t.dueDate || t.dueDate < '2026-08-16') pre.push(t);
-    else if (t.dueDate === '2026-08-16' && t.sortOrder < 300) dayOf.push(t);
+    if (!t.dueDate || t.dueDate < SHOW_DATE) pre.push(t);
+    else if (t.dueDate === SHOW_DATE && t.sortOrder < DAY_OF_SHOW_SORT_THRESHOLD) dayOf.push(t);
     else post.push(t);
   }
   const groups: Group[] = [];

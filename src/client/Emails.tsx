@@ -84,14 +84,16 @@ function ThreadDetail({ thread, onBack }: ThreadDetailProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/emails/${thread.id}`)
+    const ac = new AbortController();
+    fetch(`/api/emails/${thread.id}`, { signal: ac.signal })
       .then(r => r.json() as Promise<{ ok: boolean; data?: { thread: EmailThread; messages: EmailMessage[] }; error?: string }>)
       .then(json => {
         if (!json.ok || !json.data) throw new Error(json.error ?? 'Failed to load');
         setMessages(json.data.messages);
       })
-      .catch(e => setError(e instanceof Error ? e.message : 'Failed to load'))
-      .finally(() => setLoading(false));
+      .catch(e => { if (e?.name !== 'AbortError') setError(e instanceof Error ? e.message : 'Failed to load'); })
+      .finally(() => { if (!ac.signal.aborted) setLoading(false); });
+    return () => ac.abort();
   }, [thread.id]);
 
   return (

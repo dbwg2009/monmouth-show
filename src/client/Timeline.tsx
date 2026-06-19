@@ -167,9 +167,13 @@ export function Timeline({ viewer }: Props) {
     if (!confirm(`Delete "${editSlot.actName}" from the schedule?`)) return;
     setSaving(true);
     try {
-      await fetch(`/api/timeline/${editSlot.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/timeline/${editSlot.id}`, { method: 'DELETE' });
+      const json = await res.json() as { ok: boolean; error?: string };
+      if (!json.ok) throw new Error(json.error ?? 'Delete failed');
       setEditSlot(null);
       await load();
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Delete failed');
     } finally {
       setSaving(false);
     }

@@ -18,11 +18,20 @@ export function Info(_: Props) {
       const val = json.data?.scratchpad ?? '';
       setScratchpad(val);
       setSavedScratchpad(val);
-    } catch {}
+    } catch (e) {
+      console.error('Failed to load scratchpad:', e);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  // Auto-clear the save message, cleaning up the timer on unmount.
+  useEffect(() => {
+    if (!saveMsg) return;
+    const timer = setTimeout(() => setSaveMsg(''), 2000);
+    return () => clearTimeout(timer);
+  }, [saveMsg]);
 
   async function saveScratchpad() {
     setSaving(true);
@@ -34,7 +43,6 @@ export function Info(_: Props) {
       });
       setSavedScratchpad(scratchpad);
       setSaveMsg('Saved ✓');
-      setTimeout(() => setSaveMsg(''), 2000);
     } catch {
       setSaveMsg('Failed to save');
     } finally {
@@ -146,7 +154,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function EmergencyRow({ name, phone }: { name: string; phone: string }) {
-  const isCallable = phone.replace(/\s/g, '').match(/^\d+$/);
+  const isCallable = phone.replace(/\s/g, '').match(/^\+?\d+$/);
   return (
     <div className="info-row">
       <span className="info-row-label">{name}</span>

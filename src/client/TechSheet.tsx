@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Act, TimelineSlot } from '../types.ts';
+import { SHOW_DATE } from './constants.ts';
 
 function Spinner() { return <div className="spinner-wrap"><div className="spinner" /></div>; }
 
@@ -19,7 +20,7 @@ export function TechSheet() {
       if (!aJson.ok || !aJson.data) throw new Error('Failed to load acts');
       if (!sJson.ok || !sJson.data) throw new Error('Failed to load timeline');
       setActs(aJson.data);
-      setSlots(sJson.data.filter(s => s.date === '2026-08-16' && !s.isGap));
+      setSlots(sJson.data.filter(s => s.date === SHOW_DATE && !s.isGap));
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load');

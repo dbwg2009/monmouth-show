@@ -14,10 +14,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return;
   // API requests: network first, no cache
   if (url.pathname.startsWith('/api/')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('{"ok":false,"error":"Offline"}', { headers: { 'Content-Type': 'application/json' } })));
+    e.respondWith(fetch(e.request).catch(() => new Response('{"ok":false,"error":"Offline"}', { status: 503, headers: { 'Content-Type': 'application/json' } })));
     return;
   }
   // Static assets: cache first

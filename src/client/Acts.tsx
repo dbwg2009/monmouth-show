@@ -100,6 +100,7 @@ export function Acts({ viewer }: Props) {
   const [arrivalAct, setArrivalAct] = useState<ActWithSlots | null>(null);
   const [arrivalEdit, setArrivalEdit] = useState<ArrivalData>({ expected: '', arrived: false });
   const [savingArrival, setSavingArrival] = useState(false);
+  const [arrivalError, setArrivalError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -191,7 +192,9 @@ export function Acts({ viewer }: Props) {
     if (!confirm(`Delete "${editAct.name}"? This cannot be undone.`)) return;
     setSaving(true);
     try {
-      await fetch(`/api/acts/${editAct.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/acts/${editAct.id}`, { method: 'DELETE' });
+      const json = await res.json() as { ok: boolean; error?: string };
+      if (!json.ok) throw new Error(json.error ?? 'Delete failed');
       setEditAct(null);
       await load();
     } catch (e) {
@@ -205,23 +208,27 @@ export function Acts({ viewer }: Props) {
     setArrivalAct(act);
     const key = `arrival_${act.id}`;
     setArrivalEdit(arrivals[key] ?? { expected: '', arrived: false });
+    setArrivalError(null);
   }
 
   async function saveArrival() {
     if (!arrivalAct) return;
     setSavingArrival(true);
+    setArrivalError(null);
     try {
       const key = `arrival_${arrivalAct.id}`;
       const value = JSON.stringify(arrivalEdit);
-      await fetch(`/api/settings/${key}`, {
+      const res = await fetch(`/api/settings/${key}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ value }),
       });
+      const json = await res.json() as { ok: boolean; error?: string };
+      if (!json.ok) throw new Error(json.error ?? 'Save failed');
       setArrivals(prev => ({ ...prev, [key]: arrivalEdit }));
       setArrivalAct(null);
     } catch (e) {
-      console.error(e);
+      setArrivalError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSavingArrival(false);
     }
@@ -432,6 +439,7 @@ export function Acts({ viewer }: Props) {
           <TextInput type="time" value={arrivalEdit.expected} onChange={e => setArrivalEdit(s => ({ ...s, expected: e.target.value }))} />
         </Field>
         <Toggle checked={arrivalEdit.arrived} onChange={v => setArrivalEdit(s => ({ ...s, arrived: v }))} label="Has arrived on site" />
+        {arrivalError && <div className="form-error">⚠️ {arrivalError}</div>}
       </Drawer>
     </div>
   );

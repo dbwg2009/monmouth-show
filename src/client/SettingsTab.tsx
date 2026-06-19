@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Field, TextInput } from './Drawer.tsx';
 
 function Spinner() { return <div className="spinner-wrap"><div className="spinner" /></div>; }
@@ -8,17 +8,26 @@ export function SettingsTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Record<string, string>>({});
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const load = useCallback(async () => {
     try {
       const res = await fetch('/api/settings');
       const json = await res.json() as { ok: boolean; data?: Record<string, string> };
       if (json.ok && json.data) setSettings(json.data);
-    } catch {}
+    } catch (e) {
+      console.error('Failed to load settings:', e);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  // Cancel any pending message-clear timers on unmount.
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => { timers.forEach(clearTimeout); timers.clear(); };
+  }, []);
 
   async function save(key: string, value: string) {
     setSaving(key);
@@ -30,7 +39,11 @@ export function SettingsTab() {
       });
       setSettings(s => ({ ...s, [key]: value }));
       setMsgs(m => ({ ...m, [key]: 'Saved ✓' }));
-      setTimeout(() => setMsgs(m => { const n = { ...m }; delete n[key]; return n; }), 2000);
+      const timer = setTimeout(() => {
+        setMsgs(m => { const n = { ...m }; delete n[key]; return n; });
+        timersRef.current.delete(key);
+      }, 2000);
+      timersRef.current.set(key, timer);
     } catch {
       setMsgs(m => ({ ...m, [key]: 'Failed' }));
     } finally {
@@ -129,13 +142,13 @@ export function SettingsTab() {
 
 interface SettingRowProps {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   value: string;
   saveKey: string;
   onSave: (key: string, value: string) => Promise<void>;
   saving: string | null;
-  msg?: string;
-  placeholder?: string;
+  msg?: string | undefined;
+  placeholder?: string | undefined;
 }
 
 function SettingRow({ label, hint, value, saveKey, onSave, saving, msg, placeholder }: SettingRowProps) {
