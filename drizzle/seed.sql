@@ -110,7 +110,7 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   'a.m.macdonald@reading.ac.uk',
   'tonyforster55@icloud.com',
   NULL,
-  1,
+  0, -- brings own PA (see notes)
   3, -- lead vocal, rhythm guitar/vocal, lead guitar
   0,
   NULL,
