@@ -37,6 +37,10 @@ export function RunningOrder() {
   }
   function save() {
     if (!form.actName.trim() && !form.isGap) return;
+    if (!form.openEnded && toMins(form.endTime) <= toMins(form.startTime)) {
+      alert('End time must be after the start time.');
+      return;
+    }
     const body = {
       actId: form.actId ? Number(form.actId) : null,
       actName: form.isGap ? (form.gapReason || 'Gap') : form.actName,

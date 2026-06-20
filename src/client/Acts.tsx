@@ -81,6 +81,14 @@ function ActDetail({ act, onClose }: { act: Act; onClose: () => void }) {
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   function save() {
+    const micCount = Number(form.micCount);
+    const setupMins = Number(form.setupMins);
+    const feePounds = form.feePence ? Number(form.feePence) : null;
+    if (!Number.isFinite(micCount) || micCount < 0 || !Number.isFinite(setupMins) || setupMins < 0
+      || (feePounds != null && (!Number.isFinite(feePounds) || feePounds < 0))) {
+      alert('Mics, setup time and fee must be valid, non-negative numbers.');
+      return;
+    }
     patch('acts', act.id, {
       name: form.name.trim() || act.name,
       contactName: form.contactName || null,
@@ -88,11 +96,11 @@ function ActDetail({ act, onClose }: { act: Act; onClose: () => void }) {
       contactEmail: form.contactEmail || null,
       contactEmail2: form.contactEmail2 || null,
       performerCount: form.performerCount || null,
-      micCount: Number(form.micCount) || 0,
+      micCount,
       powerSockets: form.powerSockets || null,
       seatsNotes: form.seatsNotes || null,
-      setupMins: Number(form.setupMins) || 0,
-      feePence: form.feePence ? Math.round(Number(form.feePence) * 100) : null,
+      setupMins,
+      feePence: feePounds == null ? null : Math.round(feePounds * 100),
       notes: form.notes || null,
       websiteUrl: form.websiteUrl || null,
       needsPA: form.needsPA,
@@ -196,7 +204,7 @@ function ChannelRow({ ch, onPatch, onDelete }: { ch: Channel; onPatch: (p: Parti
   return (
     <div className="channel-row">
       <span className="ch-no">{ch.channelNo}</span>
-      <input className="ch-in src" value={src} onChange={(e) => setSrc(e.target.value)} onBlur={() => src !== ch.source && onPatch({ source: src })} />
+      <input className="ch-in src" value={src} onChange={(e) => setSrc(e.target.value)} onBlur={() => { const v = src.trim(); if (!v) { setSrc(ch.source); return; } if (v !== ch.source) onPatch({ source: v }); }} />
       <input className="ch-in typ" value={typ} onChange={(e) => setTyp(e.target.value)} onBlur={() => typ !== (ch.inputType ?? '') && onPatch({ inputType: typ || null })} />
       <button className="ch-del" onClick={onDelete} aria-label="Remove channel"><Icon name="x" size={14} /></button>
     </div>

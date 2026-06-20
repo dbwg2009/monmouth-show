@@ -82,7 +82,8 @@ export function App() {
 
   if (!viewer) return <ViewerPicker onPick={(v) => setViewer(v)} />;
 
-  const me = VIEWERS.find((v) => v.name === viewer)!;
+  const me = VIEWERS.find((v) => v.name === viewer);
+  if (!me) return <ViewerPicker onPick={(v) => setViewer(v)} />;
   const inMore = MORE.some((m) => m.id === tab);
 
   const go = (t: Tab) => { setTab(t); setMoreOpen(false); };

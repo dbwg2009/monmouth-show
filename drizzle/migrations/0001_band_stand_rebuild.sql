@@ -2,7 +2,7 @@
 -- build-up tooling tables (channels, chase list, contacts, locations, walk-around notes).
 
 -- ── acts: live day-of status ─────────────────────────────────────────────────
-ALTER TABLE `acts` ADD COLUMN `status` text DEFAULT 'expected' NOT NULL;--> statement-breakpoint
+ALTER TABLE `acts` ADD COLUMN `status` text DEFAULT 'expected' NOT NULL CHECK (`status` IN ('expected','arrived','setup','soundchecked','performing','done'));--> statement-breakpoint
 ALTER TABLE `acts` ADD COLUMN `status_updated_at` text;--> statement-breakpoint
 
 -- ── timeline_slots: planned vs working times, live actuals, open-ended ────────

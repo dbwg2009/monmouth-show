@@ -119,6 +119,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // ── Reconcile from server ──────────────────────────────────────────────────
   const refresh = useCallback(async () => {
+    // Don't overwrite un-synced optimistic edits with server state.
+    if (loadOutbox().length > 0) { setReady(true); return; }
     try {
       const res = await fetch('/api/bootstrap', { cache: 'no-store' });
       const json = await res.json() as { ok: boolean; data?: DbState };

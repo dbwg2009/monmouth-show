@@ -143,8 +143,8 @@ function LiveBoard({ now, preview, onExitPreview, goTo }: { now: Date; preview: 
           onStart={() => next && startSlot(next.id)} />
       )}
 
-      {next && (current || !allDone) && (
-        <NextCard slot={next} act={actById(next.actId)} isStart={!!current}
+      {next && current && (
+        <NextCard slot={next} act={actById(next.actId)} isStart
           onStart={() => startSlot(next.id)} />
       )}
 
