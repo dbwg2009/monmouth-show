@@ -1,22 +1,16 @@
 {
-  "name": "ShowRunner · Monmouthshire Show 2026",
-  "short_name": "ShowRunner",
-  "description": "Band Stand coordinator for Monmouthshire Show 2026",
+  "name": "Monmouthshire Show – Band Stand",
+  "short_name": "Band Stand",
+  "description": "Band Stand coordinator for the Monmouthshire Show 2026 — running order, acts, tech and contacts.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f5f7f4",
-  "theme_color": "#ffffff",
+  "background_color": "#f6f3ea",
+  "theme_color": "#15512f",
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

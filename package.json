@@ -1,10 +1,10 @@
 {
   "name": "monmouth-show",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run build:ui -- --watch\" \"wrangler pages dev public --port 8788 --d1=DB\"",
+    "dev": "concurrently \"npm run build:ui -- --watch\" \"wrangler pages dev public --port 8788\"",
     "build": "npm run build:ui",
     "build:ui": "esbuild src/client/main.tsx --bundle --outfile=public/app.js --target=es2022 --format=esm --jsx=automatic",
     "build:ui:dev": "esbuild src/client/main.tsx --bundle --outfile=public/app.js --target=es2022 --format=esm --jsx=automatic --sourcemap",

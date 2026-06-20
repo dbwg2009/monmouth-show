@@ -3,31 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="ShowRunner — Monmouthshire Show 2026 Band Stand coordinator" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="Band Stand — Monmouthshire Show 2026 coordinator for Dan, Jacob & Steph" />
+  <meta name="theme-color" content="#15512f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="ShowRunner" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Band Stand" />
   <link rel="manifest" href="/manifest.json" />
-  <title>ShowRunner · Monmouthshire Show 2026</title>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <title>Band Stand · Monmouthshire Show 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <noscript>
-    <p style="padding:1rem;font-family:sans-serif">
-      ShowRunner requires JavaScript. Please enable it in your browser.
-    </p>
-  </noscript>
+  <noscript><p style="padding:1rem;font-family:sans-serif">Band Stand needs JavaScript. Please enable it.</p></noscript>
   <div id="root"></div>
   <script type="module" src="/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     }
   </script>
 </body>

@@ -1,35 +1,60 @@
-const CACHE = 'showrunner-v1';
-const STATIC = ['/', '/app.js', '/styles.css', '/manifest.json'];
+// Band Stand — offline-first service worker.
+// Shell is cache-first; API GETs are network-first with a cache fallback so the
+// app keeps working with no signal. Mutations are NOT intercepted — the app's
+// own outbox queues them and replays when back online.
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
+const CACHE = 'bandstand-v2';
+const SHELL = [
+  '/', '/app.js', '/styles.css', '/manifest.json',
+  '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png',
+];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
+self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))),
   );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  if (url.origin !== self.location.origin) return;
-  // API requests: network first, no cache
-  if (url.pathname.startsWith('/api/')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('{"ok":false,"error":"Offline"}', { status: 503, headers: { 'Content-Type': 'application/json' } })));
+self.addEventListener('fetch', (e) => {
+  const { request } = e;
+  if (request.method !== 'GET') return; // let mutations hit the network directly
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return; // ignore cross-origin (fonts etc.)
+
+  // App navigations: serve the cached shell when offline.
+  if (request.mode === 'navigate') {
+    e.respondWith(fetch(request).catch(() => caches.match('/').then((r) => r || fetch(request))));
     return;
   }
-  // Static assets: cache first
+
+  // API GETs: network-first, cache the result, fall back to cache offline.
+  if (url.pathname.startsWith('/api/')) {
+    e.respondWith(
+      fetch(request)
+        .then((res) => {
+          if (res.ok) { const clone = res.clone(); caches.open(CACHE).then((c) => c.put(request, clone)); }
+          return res;
+        })
+        .catch(() => caches.match(request).then((cached) =>
+          cached || new Response('{"ok":false,"error":"offline"}', { status: 503, headers: { 'Content-Type': 'application/json' } }))),
+    );
+    return;
+  }
+
+  // Static assets: stale-while-revalidate.
   e.respondWith(
-    caches.match(e.request).then(cached => cached ?? fetch(e.request).then(res => {
-      if (res.ok) {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-      }
-      return res;
-    }))
+    caches.match(request).then((cached) => {
+      const network = fetch(request).then((res) => {
+        if (res.ok) { const clone = res.clone(); caches.open(CACHE).then((c) => c.put(request, clone)); }
+        return res;
+      }).catch(() => cached || Response.error());
+      return cached || network;
+    }),
   );
 });

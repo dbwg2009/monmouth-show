@@ -1,446 +1,204 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Act, TimelineSlot, Viewer } from '../types.ts';
-import { Drawer, Field, TextInput, TextArea, Toggle, Select, FormSection, DangerBtn } from './Drawer.tsx';
+import { useState } from 'react';
+import { useStore } from './store.tsx';
+import { Icon, StatusPill, STATUS_META, SectionTitle, telHref, smsHref, mailHref } from './ui.tsx';
+import { ActNeeds } from './Home.tsx';
+import { Drawer, Field, TextInput, TextArea, Toggle, DangerBtn } from './Drawer.tsx';
+import type { Act, ActStatus, Channel } from '../types.ts';
+import { ACT_STATUS_FLOW } from '../types.ts';
 
-interface Props { viewer: Viewer; }
-
-function IconPhone() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" />
-    </svg>
-  );
-}
-function IconMail() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-}
-function IconGlobe() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  );
-}
-function IconEdit() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}>
-      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  );
-}
-function Spinner() { return <div className="spinner-wrap"><div className="spinner" /></div>; }
-
-function fmt(pence: number): string { return `£${(pence / 100).toFixed(2).replace('.00', '')}`; }
-function fmtTime(t: string): string { const [h, m] = t.split(':'); return `${h}:${m}`; }
-
-interface ArrivalData { expected: string; arrived: boolean; }
-
-interface ActWithSlots extends Act { slots: TimelineSlot[]; }
-
-const EMPTY_ACT: Omit<Act, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'> = {
-  name: '', contactName: '', contactEmail: '', contactEmail2: '', contactPhone: '',
-  needsPA: true, micCount: 0, needsSeats: false, seatsNotes: '', powerSockets: '',
-  setupMins: 0, performerCount: '', feePence: null, confirmed: false, notes: '', websiteUrl: '',
+const nextStatus = (s: ActStatus): ActStatus => {
+  const i = ACT_STATUS_FLOW.indexOf(s);
+  return ACT_STATUS_FLOW[Math.min(i + 1, ACT_STATUS_FLOW.length - 1)]!;
 };
+const fmtFee = (p: number | null) => (p == null ? null : `£${(p / 100).toFixed(p % 100 ? 2 : 0)}`);
 
-interface EditState {
-  name: string; contactName: string; contactEmail: string; contactEmail2: string;
-  contactPhone: string; needsPA: boolean; micCount: number; needsSeats: boolean;
-  seatsNotes: string; powerSockets: string; setupMins: number; performerCount: string;
-  feePence: string; confirmed: boolean; notes: string; websiteUrl: string;
-}
+export function Acts() {
+  const { db, viewer, patch, create } = useStore();
+  const acts = [...db.acts].sort((a, b) => a.name.localeCompare(b.name));
+  const [openId, setOpenId] = useState<number | null>(null);
+  const open = acts.find((a) => a.id === openId) ?? null;
 
-function actToEdit(a: Partial<Act>): EditState {
-  return {
-    name: a.name ?? '', contactName: a.contactName ?? '', contactEmail: a.contactEmail ?? '',
-    contactEmail2: a.contactEmail2 ?? '', contactPhone: a.contactPhone ?? '',
-    needsPA: a.needsPA ?? true, micCount: a.micCount ?? 0, needsSeats: a.needsSeats ?? false,
-    seatsNotes: a.seatsNotes ?? '', powerSockets: a.powerSockets ?? '',
-    setupMins: a.setupMins ?? 0, performerCount: a.performerCount ?? '',
-    feePence: a.feePence != null ? String(a.feePence / 100) : '',
-    confirmed: a.confirmed ?? false, notes: a.notes ?? '', websiteUrl: a.websiteUrl ?? '',
-  };
-}
-
-function editToBody(e: EditState, viewer: Viewer): Record<string, unknown> {
-  return {
-    name: e.name, contactName: e.contactName || null, contactEmail: e.contactEmail || null,
-    contactEmail2: e.contactEmail2 || null, contactPhone: e.contactPhone || null,
-    needsPA: e.needsPA, micCount: Number(e.micCount), needsSeats: e.needsSeats,
-    seatsNotes: e.seatsNotes || null, powerSockets: e.powerSockets || null,
-    setupMins: Number(e.setupMins), performerCount: e.performerCount || null,
-    feePence: e.feePence ? Math.round(parseFloat(e.feePence) * 100) : null,
-    confirmed: e.confirmed, notes: e.notes || null, websiteUrl: e.websiteUrl || null,
-    updatedBy: viewer,
-  };
-}
-
-export function Acts({ viewer }: Props) {
-  const [acts, setActs] = useState<ActWithSlots[]>([]);
-  const [arrivals, setArrivals] = useState<Record<string, ArrivalData>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Edit drawer
-  const [editAct, setEditAct] = useState<ActWithSlots | null>(null);
-  const [editState, setEditState] = useState<EditState>(actToEdit(EMPTY_ACT));
-  const [isNew, setIsNew] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-
-  // Arrival drawer
-  const [arrivalAct, setArrivalAct] = useState<ActWithSlots | null>(null);
-  const [arrivalEdit, setArrivalEdit] = useState<ArrivalData>({ expected: '', arrived: false });
-  const [savingArrival, setSavingArrival] = useState(false);
-  const [arrivalError, setArrivalError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const [actsRes, slotsRes, settingsRes] = await Promise.all([
-        fetch('/api/acts'),
-        fetch('/api/timeline'),
-        fetch('/api/settings'),
-      ]);
-      const actsJson = await actsRes.json() as { ok: boolean; data?: Act[]; error?: string };
-      const slotsJson = await slotsRes.json() as { ok: boolean; data?: TimelineSlot[]; error?: string };
-      const settingsJson = await settingsRes.json() as { ok: boolean; data?: Record<string, string> };
-
-      if (!actsJson.ok || !actsJson.data) throw new Error(actsJson.error ?? 'Failed to load acts');
-      if (!slotsJson.ok || !slotsJson.data) throw new Error(slotsJson.error ?? 'Failed to load timeline');
-
-      const slotsByAct = new Map<number, TimelineSlot[]>();
-      for (const s of slotsJson.data) {
-        if (s.actId !== null) {
-          const arr = slotsByAct.get(s.actId) ?? [];
-          arr.push(s);
-          slotsByAct.set(s.actId, arr);
-        }
-      }
-      setActs(actsJson.data.map(a => ({ ...a, slots: slotsByAct.get(a.id) ?? [] })));
-
-      // Load arrivals from settings
-      const settings = settingsJson.data ?? {};
-      const arrMap: Record<string, ArrivalData> = {};
-      for (const [k, v] of Object.entries(settings)) {
-        if (k.startsWith('arrival_')) {
-          try { arrMap[k] = JSON.parse(v); } catch {}
-        }
-      }
-      setArrivals(arrMap);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { void load(); }, [load]);
-
-  // Deduplicate acts
-  const seen = new Set<number>();
-  const unique = acts.filter(a => {
-    if (seen.has(a.id)) return false;
-    seen.add(a.id);
-    return true;
-  });
-
-  function openEdit(act: ActWithSlots) {
-    setIsNew(false);
-    setEditAct(act);
-    setEditState(actToEdit(act));
-    setSaveError(null);
+  function addAct() {
+    create('acts', { name: 'New act', status: 'expected', confirmed: false, micCount: 0, needsPA: false, needsSeats: false, setupMins: 0, updatedBy: viewer });
   }
-
-  function openNew() {
-    setIsNew(true);
-    setEditAct({ ...EMPTY_ACT, id: 0, createdAt: '', updatedAt: '', updatedBy: null, slots: [] });
-    setEditState(actToEdit(EMPTY_ACT));
-    setSaveError(null);
-  }
-
-  async function saveAct() {
-    if (!editState.name.trim()) { setSaveError('Name is required'); return; }
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const body = editToBody(editState, viewer);
-      const res = isNew
-        ? await fetch('/api/acts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-        : await fetch(`/api/acts/${editAct!.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const json = await res.json() as { ok: boolean; error?: string };
-      if (!json.ok) throw new Error(json.error ?? 'Save failed');
-      setEditAct(null);
-      await load();
-    } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Save failed');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function deleteAct() {
-    if (!editAct || isNew) return;
-    if (!confirm(`Delete "${editAct.name}"? This cannot be undone.`)) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/acts/${editAct.id}`, { method: 'DELETE' });
-      const json = await res.json() as { ok: boolean; error?: string };
-      if (!json.ok) throw new Error(json.error ?? 'Delete failed');
-      setEditAct(null);
-      await load();
-    } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Delete failed');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function openArrival(act: ActWithSlots) {
-    setArrivalAct(act);
-    const key = `arrival_${act.id}`;
-    setArrivalEdit(arrivals[key] ?? { expected: '', arrived: false });
-    setArrivalError(null);
-  }
-
-  async function saveArrival() {
-    if (!arrivalAct) return;
-    setSavingArrival(true);
-    setArrivalError(null);
-    try {
-      const key = `arrival_${arrivalAct.id}`;
-      const value = JSON.stringify(arrivalEdit);
-      const res = await fetch(`/api/settings/${key}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value }),
-      });
-      const json = await res.json() as { ok: boolean; error?: string };
-      if (!json.ok) throw new Error(json.error ?? 'Save failed');
-      setArrivals(prev => ({ ...prev, [key]: arrivalEdit }));
-      setArrivalAct(null);
-    } catch (e) {
-      setArrivalError(e instanceof Error ? e.message : 'Save failed');
-    } finally {
-      setSavingArrival(false);
-    }
-  }
-
-  if (loading) return <Spinner />;
-  if (error) return <div className="error-msg">⚠️ {error}</div>;
 
   return (
-    <div className="acts-page">
-      {/* Add new act button */}
-      <button className="add-btn" onClick={openNew}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add Act
-      </button>
+    <div className="page">
+      <SectionTitle action={<button className="icon-pill primary" onClick={addAct} title="Add act"><Icon name="plus" size={16} /></button>}>Acts</SectionTitle>
+      <p className="page-sub">Tap the status chip to advance it. Tap a card for tech, input list and contacts.</p>
 
-      {unique.map(act => {
-        const uniqueSlots = act.slots.filter((s, i, arr) =>
-          arr.findIndex(s2 => s2.startTime === s.startTime) === i
-        );
-        const arrKey = `arrival_${act.id}`;
-        const arrival = arrivals[arrKey];
-
-        return (
-          <div key={act.id} className="act-card">
-            <div className="act-card-header">
-              <div className="act-card-left">
-                <div className="act-card-name">{act.name}</div>
-                {uniqueSlots.length > 0 && (
-                  <div className="act-slot-time">
-                    {uniqueSlots.map(s => `${fmtTime(s.startTime)}–${fmtTime(s.endTime)}`).join(' · ')}
-                  </div>
-                )}
+      <div className="act-list">
+        {acts.map((a) => (
+          <div key={a.id} className="act-card" onClick={() => setOpenId(a.id)}>
+            <div className="act-card-top">
+              <div className="act-card-name">
+                {a.name}
+                {a.confirmed
+                  ? <span className="confirm-tick" title="Confirmed"><Icon name="check" size={12} /></span>
+                  : <span className="confirm-no" title="Not confirmed">unconfirmed</span>}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                <span className={`badge ${act.confirmed ? 'badge-green' : 'badge-amber'}`}>
-                  {act.confirmed ? '✓ Confirmed' : 'Unconfirmed'}
-                </span>
-                <button className="icon-btn" onClick={() => openEdit(act)} aria-label="Edit act">
-                  <IconEdit />
-                </button>
-              </div>
-            </div>
-
-            {/* Arrival tracking */}
-            <button className={`arrival-row ${arrival?.arrived ? 'arrived' : ''}`} onClick={() => openArrival(act)}>
-              <span className={`arrival-dot ${arrival?.arrived ? 'on' : ''}`} />
-              <span className="arrival-label">
-                {arrival?.arrived
-                  ? 'Arrived ✓'
-                  : arrival?.expected
-                    ? `Expected ${arrival.expected}`
-                    : 'Set arrival time'}
-              </span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} style={{ width: 14, height: 14, opacity: 0.4, marginLeft: 'auto' }}>
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-
-            {/* Tech */}
-            <div className="act-tech">
-              {act.needsPA
-                ? <span className="tech-chip">🔊 House PA</span>
-                : <span className="tech-chip">🔊 Own PA</span>}
-              {act.micCount > 0 && <span className="tech-chip">🎤 {act.micCount} mic{act.micCount > 1 ? 's' : ''}</span>}
-              {act.needsSeats && <span className="tech-chip">🪑 Seating{act.seatsNotes ? ` (${act.seatsNotes})` : ''}</span>}
-              {act.powerSockets && <span className="tech-chip">⚡ {act.powerSockets}</span>}
-              {act.performerCount && <span className="tech-chip">👥 {act.performerCount} performers</span>}
-              {act.setupMins > 0 && <span className="tech-chip">⏱ {act.setupMins} min setup</span>}
-            </div>
-
-            {/* Contacts */}
-            {(act.contactName || act.contactEmail || act.contactPhone) && (
-              <div className="act-contacts">
-                {act.contactName && (
-                  <div className="contact-row">
-                    <span className="contact-name">{act.contactName}</span>
-                    {act.contactPhone && (
-                      <a href={`tel:${act.contactPhone.replace(/\s/g, '')}`} className="contact-btn btn-phone" aria-label={`Call ${act.contactName}`}>
-                        <IconPhone />
-                      </a>
-                    )}
-                    {act.contactEmail && (
-                      <a href={`mailto:${act.contactEmail}`} className="contact-btn btn-email" aria-label={`Email ${act.contactName}`}>
-                        <IconMail />
-                      </a>
-                    )}
-                  </div>
-                )}
-                {act.contactEmail2 && (
-                  <div className="contact-row">
-                    <span className="contact-name" style={{ fontSize: 12, color: 'var(--text-muted)' }}>{act.contactEmail2}</span>
-                    <a href={`mailto:${act.contactEmail2}`} className="contact-btn btn-email"><IconMail /></a>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {act.notes && <div className="act-notes">{act.notes}</div>}
-
-            {(act.feePence !== null || act.websiteUrl) && (
-              <div className="act-footer">
-                <div>
-                  {act.feePence !== null
-                    ? <><div className="act-fee-amount">{fmt(act.feePence)}</div><div className="act-fee-label">Agreed fee</div></>
-                    : <div className="act-fee-label" style={{ fontStyle: 'italic' }}>No fee</div>}
-                </div>
-                {act.websiteUrl && (
-                  <a href={act.websiteUrl} target="_blank" rel="noopener noreferrer" className="contact-btn btn-web"
-                    style={{ width: 'auto', padding: '0 12px', gap: 6, display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 600 }}>
-                    <IconGlobe />Website
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      {/* Act edit/create drawer */}
-      <Drawer
-        open={editAct !== null}
-        onClose={() => setEditAct(null)}
-        title={isNew ? 'Add Act' : `Edit: ${editAct?.name}`}
-        footer={
-          <div className="drawer-footer-btns">
-            {!isNew && <DangerBtn onClick={deleteAct}>Delete Act</DangerBtn>}
-            <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-              <button className="btn-secondary" onClick={() => setEditAct(null)}>Cancel</button>
-              <button className="btn-primary" onClick={() => void saveAct()} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
+              <button className="status-btn" onClick={(e) => { e.stopPropagation(); patch('acts', a.id, { status: nextStatus(a.status), updatedBy: viewer }); }} title="Tap to advance">
+                <StatusPill status={a.status} />
               </button>
             </div>
+            <div className="act-card-sub">
+              {a.performerCount && <span>{a.performerCount} people</span>}
+              {a.contactName && <span>· {a.contactName}</span>}
+              {fmtFee(a.feePence) && <span>· {fmtFee(a.feePence)}</span>}
+            </div>
+            <ActNeeds act={a} compact />
           </div>
-        }
-      >
-        {saveError && <div className="form-error">{saveError}</div>}
-        <FormSection title="Act Details" />
-        <Field label="Act name *">
-          <TextInput value={editState.name} onChange={e => setEditState(s => ({ ...s, name: e.target.value }))} placeholder="e.g. Rock Choir" />
-        </Field>
-        <Toggle checked={editState.confirmed} onChange={v => setEditState(s => ({ ...s, confirmed: v }))} label="Confirmed" />
-        <Field label="Performers">
-          <TextInput value={editState.performerCount} onChange={e => setEditState(s => ({ ...s, performerCount: e.target.value }))} placeholder="e.g. 12 or 60-80" />
-        </Field>
-        <Field label="Fee (£)">
-          <TextInput type="number" step="0.01" min="0" value={editState.feePence} onChange={e => setEditState(s => ({ ...s, feePence: e.target.value }))} placeholder="0.00" />
-        </Field>
+        ))}
+      </div>
 
-        <FormSection title="Primary Contact" />
-        <Field label="Contact name">
-          <TextInput value={editState.contactName} onChange={e => setEditState(s => ({ ...s, contactName: e.target.value }))} placeholder="Name" />
-        </Field>
-        <Field label="Phone">
-          <TextInput type="tel" value={editState.contactPhone} onChange={e => setEditState(s => ({ ...s, contactPhone: e.target.value }))} placeholder="07xxx xxxxxx" />
-        </Field>
-        <Field label="Email">
-          <TextInput type="email" value={editState.contactEmail} onChange={e => setEditState(s => ({ ...s, contactEmail: e.target.value }))} placeholder="name@example.com" />
-        </Field>
-        <Field label="Second email">
-          <TextInput type="email" value={editState.contactEmail2} onChange={e => setEditState(s => ({ ...s, contactEmail2: e.target.value }))} placeholder="backup@example.com" />
-        </Field>
-        <Field label="Website">
-          <TextInput type="url" value={editState.websiteUrl} onChange={e => setEditState(s => ({ ...s, websiteUrl: e.target.value }))} placeholder="https://…" />
-        </Field>
-
-        <FormSection title="Technical Requirements" />
-        <Toggle checked={editState.needsPA} onChange={v => setEditState(s => ({ ...s, needsPA: v }))} label="Needs house PA" />
-        <Field label="Microphones">
-          <TextInput type="number" min="0" value={editState.micCount} onChange={e => setEditState(s => ({ ...s, micCount: Number(e.target.value) }))} />
-        </Field>
-        <Toggle checked={editState.needsSeats} onChange={v => setEditState(s => ({ ...s, needsSeats: v }))} label="Needs seating" />
-        {editState.needsSeats && (
-          <Field label="Seating notes">
-            <TextInput value={editState.seatsNotes} onChange={e => setEditState(s => ({ ...s, seatsNotes: e.target.value }))} placeholder="e.g. 80 chairs" />
-          </Field>
-        )}
-        <Field label="Power sockets">
-          <TextInput value={editState.powerSockets} onChange={e => setEditState(s => ({ ...s, powerSockets: e.target.value }))} placeholder="e.g. 2 × 13A" />
-        </Field>
-        <Field label="Setup time (minutes)">
-          <TextInput type="number" min="0" value={editState.setupMins} onChange={e => setEditState(s => ({ ...s, setupMins: Number(e.target.value) }))} />
-        </Field>
-
-        <FormSection title="Notes" />
-        <Field label="Internal notes">
-          <TextArea value={editState.notes} onChange={e => setEditState(s => ({ ...s, notes: e.target.value }))} placeholder="Anything the team should know…" />
-        </Field>
+      <Drawer open={open !== null} onClose={() => setOpenId(null)} title={open?.name ?? ''}>
+        {open && <ActDetail act={open} onClose={() => setOpenId(null)} />}
       </Drawer>
+    </div>
+  );
+}
 
-      {/* Arrival drawer */}
-      <Drawer
-        open={arrivalAct !== null}
-        onClose={() => setArrivalAct(null)}
-        title={`Arrival: ${arrivalAct?.name}`}
-        footer={
-          <div className="drawer-footer-btns">
-            <button className="btn-secondary" onClick={() => setArrivalAct(null)}>Cancel</button>
-            <button className="btn-primary" onClick={() => void saveArrival()} disabled={savingArrival}>
-              {savingArrival ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        }
-      >
-        <Field label="Expected arrival time">
-          <TextInput type="time" value={arrivalEdit.expected} onChange={e => setArrivalEdit(s => ({ ...s, expected: e.target.value }))} />
-        </Field>
-        <Toggle checked={arrivalEdit.arrived} onChange={v => setArrivalEdit(s => ({ ...s, arrived: v }))} label="Has arrived on site" />
-        {arrivalError && <div className="form-error">⚠️ {arrivalError}</div>}
-      </Drawer>
+function ActDetail({ act, onClose }: { act: Act; onClose: () => void }) {
+  const { viewer, patch, remove } = useStore();
+  const [form, setForm] = useState({
+    name: act.name,
+    contactName: act.contactName ?? '',
+    contactPhone: act.contactPhone ?? '',
+    contactEmail: act.contactEmail ?? '',
+    contactEmail2: act.contactEmail2 ?? '',
+    performerCount: act.performerCount ?? '',
+    micCount: String(act.micCount),
+    powerSockets: act.powerSockets ?? '',
+    seatsNotes: act.seatsNotes ?? '',
+    setupMins: String(act.setupMins),
+    feePence: act.feePence != null ? String(act.feePence / 100) : '',
+    notes: act.notes ?? '',
+    websiteUrl: act.websiteUrl ?? '',
+    needsPA: act.needsPA,
+    needsSeats: act.needsSeats,
+    confirmed: act.confirmed,
+  });
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  function save() {
+    patch('acts', act.id, {
+      name: form.name.trim() || act.name,
+      contactName: form.contactName || null,
+      contactPhone: form.contactPhone || null,
+      contactEmail: form.contactEmail || null,
+      contactEmail2: form.contactEmail2 || null,
+      performerCount: form.performerCount || null,
+      micCount: Number(form.micCount) || 0,
+      powerSockets: form.powerSockets || null,
+      seatsNotes: form.seatsNotes || null,
+      setupMins: Number(form.setupMins) || 0,
+      feePence: form.feePence ? Math.round(Number(form.feePence) * 100) : null,
+      notes: form.notes || null,
+      websiteUrl: form.websiteUrl || null,
+      needsPA: form.needsPA,
+      needsSeats: form.needsSeats,
+      confirmed: form.confirmed,
+      updatedBy: viewer,
+    });
+    onClose();
+  }
+
+  return (
+    <div className="act-detail">
+      <div className="status-stepper">
+        {ACT_STATUS_FLOW.map((s) => (
+          <button key={s} className={`step ${act.status === s ? 'on' : ''} ${ACT_STATUS_FLOW.indexOf(s) < ACT_STATUS_FLOW.indexOf(act.status) ? 'past' : ''}`}
+            onClick={() => patch('acts', act.id, { status: s, updatedBy: viewer })}>
+            {STATUS_META[s].label}
+          </button>
+        ))}
+      </div>
+
+      <div className="contact-actions">
+        {act.contactPhone && <a className="ca-btn" href={telHref(act.contactPhone)}><Icon name="phone" size={16} /> Call</a>}
+        {act.contactPhone && <a className="ca-btn" href={smsHref(act.contactPhone)}><Icon name="message" size={16} /> Text</a>}
+        {act.contactEmail && <a className="ca-btn" href={mailHref(act.contactEmail)}><Icon name="mail" size={16} /> Email</a>}
+      </div>
+
+      <details className="acc" open>
+        <summary>Contact</summary>
+        <Field label="Contact name"><TextInput value={form.contactName} onChange={(e) => set('contactName', e.target.value)} /></Field>
+        <Field label="Phone"><TextInput value={form.contactPhone} onChange={(e) => set('contactPhone', e.target.value)} inputMode="tel" /></Field>
+        <Field label="Email"><TextInput value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} inputMode="email" /></Field>
+        <Field label="Second email"><TextInput value={form.contactEmail2} onChange={(e) => set('contactEmail2', e.target.value)} inputMode="email" /></Field>
+      </details>
+
+      <details className="acc" open>
+        <summary>Tech &amp; stage</summary>
+        <Toggle checked={form.needsPA} onChange={(v) => set('needsPA', v)} label="Needs house PA" />
+        <div className="grid-2">
+          <Field label="Mics"><TextInput type="number" value={form.micCount} onChange={(e) => set('micCount', e.target.value)} /></Field>
+          <Field label="Setup (min)"><TextInput type="number" value={form.setupMins} onChange={(e) => set('setupMins', e.target.value)} /></Field>
+        </div>
+        <Field label="Power sockets"><TextInput value={form.powerSockets} onChange={(e) => set('powerSockets', e.target.value)} placeholder="e.g. 2 sockets (mixer + laptop)" /></Field>
+        <Toggle checked={form.needsSeats} onChange={(v) => set('needsSeats', v)} label="Needs seating" />
+        {form.needsSeats && <Field label="Seating notes"><TextArea value={form.seatsNotes} onChange={(e) => set('seatsNotes', e.target.value)} /></Field>}
+        <div className="grid-2">
+          <Field label="People"><TextInput value={form.performerCount} onChange={(e) => set('performerCount', e.target.value)} placeholder="e.g. 40 or 60-80" /></Field>
+          <Field label="Fee (£)"><TextInput value={form.feePence} onChange={(e) => set('feePence', e.target.value)} inputMode="decimal" placeholder="blank = none" /></Field>
+        </div>
+      </details>
+
+      <details className="acc">
+        <summary>Input list (for BSB)</summary>
+        <ChannelsEditor act={act} />
+      </details>
+
+      <Field label="Notes"><TextArea rows={4} value={form.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
+      <Field label="Website"><TextInput value={form.websiteUrl} onChange={(e) => set('websiteUrl', e.target.value)} inputMode="url" /></Field>
+      <Toggle checked={form.confirmed} onChange={(v) => set('confirmed', v)} label="Booking confirmed" />
+
+      <div className="detail-foot">
+        <DangerBtn onClick={() => { if (confirm(`Delete ${act.name}?`)) { remove('acts', act.id); onClose(); } }}>Delete act</DangerBtn>
+        <button className="btn-primary" onClick={save}>Save</button>
+      </div>
+    </div>
+  );
+}
+
+function ChannelsEditor({ act }: { act: Act }) {
+  const { db, viewer, create, patch, remove } = useStore();
+  const rows = db.channels.filter((c) => c.actId === act.id).sort((a, b) => a.sortOrder - b.sortOrder);
+  const [adding, setAdding] = useState({ source: '', inputType: '' });
+
+  function add() {
+    if (!adding.source.trim()) return;
+    const maxNo = Math.max(0, ...rows.map((r) => r.channelNo));
+    const maxOrder = Math.max(0, ...rows.map((r) => r.sortOrder));
+    create('channels', { actId: act.id, channelNo: maxNo + 1, source: adding.source.trim(), inputType: adding.inputType || null, sortOrder: maxOrder + 10, updatedBy: viewer });
+    setAdding({ source: '', inputType: '' });
+  }
+
+  return (
+    <div className="channels">
+      {rows.length === 0 && <p className="muted-sm">No channels yet. Build the patch list BSB will need.</p>}
+      {rows.map((c) => (
+        <ChannelRow key={`${c.id}:${c.updatedAt}`} ch={c} onPatch={(p) => patch('channels', c.id, { ...p, updatedBy: viewer })} onDelete={() => remove('channels', c.id)} />
+      ))}
+      <div className="channel-add">
+        <span className="ch-no">{Math.max(0, ...rows.map((r) => r.channelNo)) + 1}</span>
+        <input className="ch-in src" placeholder="Source (e.g. Lead vocal)" value={adding.source} onChange={(e) => setAdding((a) => ({ ...a, source: e.target.value }))} />
+        <input className="ch-in typ" placeholder="SM58 / DI" value={adding.inputType} onChange={(e) => setAdding((a) => ({ ...a, inputType: e.target.value }))} />
+        <button className="ch-add-btn" onClick={add}><Icon name="plus" size={15} /></button>
+      </div>
+    </div>
+  );
+}
+
+function ChannelRow({ ch, onPatch, onDelete }: { ch: Channel; onPatch: (p: Partial<Channel>) => void; onDelete: () => void }) {
+  const [src, setSrc] = useState(ch.source);
+  const [typ, setTyp] = useState(ch.inputType ?? '');
+  return (
+    <div className="channel-row">
+      <span className="ch-no">{ch.channelNo}</span>
+      <input className="ch-in src" value={src} onChange={(e) => setSrc(e.target.value)} onBlur={() => src !== ch.source && onPatch({ source: src })} />
+      <input className="ch-in typ" value={typ} onChange={(e) => setTyp(e.target.value)} onBlur={() => typ !== (ch.inputType ?? '') && onPatch({ inputType: typ || null })} />
+      <button className="ch-del" onClick={onDelete} aria-label="Remove channel"><Icon name="x" size={14} /></button>
     </div>
   );
 }
