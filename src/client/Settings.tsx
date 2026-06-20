@@ -42,11 +42,21 @@ export function Settings() {
     safeRemove('bandstand_outbox_v1');
     location.reload();
   }
-  function resetActStatuses() {
-    const changed = db.acts.filter((a) => a.status !== 'expected');
-    if (changed.length === 0) { alert('All acts are already set to Expected.'); return; }
-    if (!confirm(`Reset ${changed.length} act${changed.length === 1 ? '' : 's'} back to “Expected”? This clears their arrival / soundcheck / done progress for everyone.`)) return;
-    changed.forEach((a) => patch('acts', a.id, { status: 'expected', updatedBy: viewer }));
+  function resetShowDay() {
+    const changedActs = db.acts.filter((a) => a.status !== 'expected');
+    const changedSlots = db.timeline.filter((s) => s.actualStartTime || s.finishedAt);
+    const hasLivePointer = !!db.settings.live_current_slot_id;
+    if (changedActs.length === 0 && changedSlots.length === 0 && !hasLivePointer) {
+      alert('Nothing to reset — all acts are "Expected" and the running order has no timestamps.');
+      return;
+    }
+    const parts: string[] = [];
+    if (changedActs.length > 0) parts.push(`${changedActs.length} act${changedActs.length === 1 ? '' : 's'} back to "Expected"`);
+    if (changedSlots.length > 0) parts.push(`clear timestamps on ${changedSlots.length} running-order slot${changedSlots.length === 1 ? '' : 's'}`);
+    if (!confirm(`Reset show day? This will ${parts.join(' and ')}, for everyone.`)) return;
+    changedActs.forEach((a) => patch('acts', a.id, { status: 'expected', updatedBy: viewer }));
+    changedSlots.forEach((s) => patch('timeline', s.id, { actualStartTime: null, finishedAt: null, updatedBy: viewer }));
+    if (hasLivePointer) setSetting('live_current_slot_id', '');
   }
 
   return (
@@ -104,8 +114,8 @@ export function Settings() {
 
       <section className="card">
         <div className="card-head"><h3>Show day</h3></div>
-        <button className="btn-secondary" onClick={resetActStatuses}><Icon name="refresh" size={15} /> Reset all acts to “Expected”</button>
-        <p className="muted-sm">Sets every act back to not-arrived — handy after a rehearsal run or to start the day with a clean slate.</p>
+        <button className="btn-secondary" onClick={resetShowDay}><Icon name="refresh" size={15} /> Reset show day</button>
+        <p className="muted-sm">Resets all acts to "Expected" and clears running-order timestamps — handy after a rehearsal run or to start show day with a clean slate.</p>
       </section>
 
       <section className="card">
