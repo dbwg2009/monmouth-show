@@ -45,7 +45,7 @@ export function Settings() {
   function resetActStatuses() {
     const changed = db.acts.filter((a) => a.status !== 'expected');
     if (changed.length === 0) { alert('All acts are already set to Expected.'); return; }
-    if (!confirm(`Reset all ${db.acts.length} acts back to “Expected”? This clears every act's arrival / soundcheck / done progress for everyone.`)) return;
+    if (!confirm(`Reset ${changed.length} act${changed.length === 1 ? '' : 's'} back to “Expected”? This clears their arrival / soundcheck / done progress for everyone.`)) return;
     changed.forEach((a) => patch('acts', a.id, { status: 'expected', updatedBy: viewer }));
   }
 
