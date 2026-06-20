@@ -3,12 +3,44 @@ import { useStore } from './store.tsx';
 import { Icon, SectionTitle, Empty, Spinner } from './ui.tsx';
 import { Drawer } from './Drawer.tsx';
 import type { EmailThread, EmailMessage } from '../types.ts';
+import { EMAIL_DRAFTS, gmailComposeUrl, type EmailDraft } from './planContent.ts';
 
 const fmtWhen = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const parseList = (s: string): string[] => { try { const a = JSON.parse(s); return Array.isArray(a) ? a : []; } catch { return []; } };
 
+function DraftCard({ draft }: { draft: EmailDraft }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard?.writeText(draft.body).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }).catch(() => { /* clipboard blocked — Open in Gmail still works */ });
+  }
+
+  return (
+    <details className="draft-card">
+      <summary>
+        <Icon name="mail" size={16} />
+        <span>{draft.label}<span className="draft-to">To: {draft.toLabel}</span></span>
+      </summary>
+      <div className="draft-body-wrap">
+        <div className="draft-field">Subject: {draft.subject}</div>
+        <div className="draft-field">Cc: Steph, Jacob</div>
+        <pre className="draft-pre">{draft.body}</pre>
+        <div className="draft-actions">
+          <a className="btn-primary sm" href={gmailComposeUrl(draft)} target="_blank" rel="noopener noreferrer">
+            <Icon name="mail" size={15} /> Open in Gmail
+          </a>
+          <button className="btn-secondary sm" onClick={copy}>{copied ? 'Copied ✓' : 'Copy text'}</button>
+        </div>
+      </div>
+    </details>
+  );
+}
+
 export function Emails() {
-  const { db, online } = useStore();
+  const { db, online, viewer } = useStore();
   const threads = db.emails;
   const [open, setOpen] = useState<EmailThread | null>(null);
 
@@ -16,6 +48,17 @@ export function Emails() {
     <div className="page">
       <SectionTitle>Emails</SectionTitle>
       <p className="page-sub">Show threads synced from Gmail{!online && ' · offline: showing last synced'}.</p>
+
+      {viewer === 'Dan' && (
+        <>
+          <div className="sub-head">Drafts to send</div>
+          <p className="muted-sm">Intro emails, ready to send — opens in Gmail pre-filled, cc'ing Steph &amp; Jacob.</p>
+          <div className="draft-list">
+            {EMAIL_DRAFTS.map((d) => <DraftCard key={d.id} draft={d} />)}
+          </div>
+          <div className="sub-head" style={{ marginTop: 18 }}>Synced threads</div>
+        </>
+      )}
 
       {threads.length === 0 ? <Empty icon="mail">No synced threads yet. Apply the “MonShow” label in Gmail, or wait for the next sync.</Empty> : (
         <div className="email-list">

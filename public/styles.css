@@ -460,6 +460,41 @@ details.acc[open] > summary::after { content:"–"; }
 .thread-offline { text-align:center; color:var(--muted); padding:20px; }
 .thread-offline blockquote { margin:10px 0 0; font-style:italic; color:var(--ink-2); }
 
+/* ── Plan: email drafts (Dan only) ─────────────────────────────────────────── */
+.draft-list { display:flex; flex-direction:column; gap:8px; }
+.draft-card { border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); box-shadow:var(--shadow); overflow:hidden; }
+.draft-card > summary { cursor:pointer; padding:13px 14px; font-weight:800; font-size:.92rem; color:var(--green-800);
+  list-style:none; display:flex; align-items:center; gap:9px; }
+.draft-card > summary::-webkit-details-marker { display:none; }
+.draft-card[open] > summary { border-bottom:1px solid var(--line); }
+.draft-to { display:block; font-weight:600; font-size:.73rem; color:var(--muted); margin-top:2px; }
+.draft-body-wrap { padding:12px 14px; }
+.draft-field { color:var(--muted); font-size:.76rem; margin-bottom:2px; }
+.draft-pre { white-space:pre-wrap; font-family:inherit; font-size:.85rem; line-height:1.5; margin:9px 0 0; color:var(--ink); overflow-wrap:anywhere; }
+.draft-actions { display:flex; gap:8px; margin-top:13px; flex-wrap:wrap; }
+.draft-actions .btn-primary { text-decoration:none; }
+
+/* ── Plan: learning track (Dan only) ───────────────────────────────────────── */
+.learn-item { border:1px solid var(--line); border-radius:var(--radius); background:var(--paper); box-shadow:var(--shadow);
+  padding:13px 15px; margin-bottom:9px; }
+.learn-head { display:flex; align-items:baseline; gap:8px; font-weight:800; font-size:1rem; letter-spacing:-.01em; }
+.learn-num { color:var(--gold-600); font-weight:900; }
+.learn-note { color:var(--ink-2); font-size:.85rem; line-height:1.5; margin-top:5px; }
+
+/* ── Plan: callouts ────────────────────────────────────────────────────────── */
+.callout-note { border-radius:var(--radius); padding:13px 15px; font-size:.85rem; line-height:1.5; margin-bottom:14px; border:1px solid; }
+.callout-note.amber  { background:#faeeda; border-color:rgba(133,79,11,.28); color:#5a4310; }
+.callout-note.amber strong  { color:#854f0b; }
+.callout-note.urgent { background:#faece7; border-color:rgba(153,60,29,.28); color:#6b2c16; }
+.callout-note.urgent strong { color:#993c1d; }
+
+/* ── Plan: stage plot table (Dan only) ─────────────────────────────────────── */
+.plot-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--paper); box-shadow:var(--shadow); }
+table.plot-table { width:100%; border-collapse:collapse; font-size:.8rem; min-width:580px; }
+table.plot-table th, table.plot-table td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+table.plot-table th { background:var(--paper-2); font-weight:800; color:var(--green-800); white-space:nowrap; }
+
 /* ── Settings ──────────────────────────────────────────────────────────────── */
 .seg { display:flex; gap:6px; background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:4px; }
 .seg-btn { flex:1; border:none; background:none; padding:10px; border-radius:9px; font-weight:700; color:var(--muted); }
