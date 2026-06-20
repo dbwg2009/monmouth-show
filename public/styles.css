@@ -470,7 +470,7 @@ details.acc[open] > summary::after { content:"–"; }
 .draft-to { display:block; font-weight:600; font-size:.73rem; color:var(--muted); margin-top:2px; }
 .draft-body-wrap { padding:12px 14px; }
 .draft-field { color:var(--muted); font-size:.76rem; margin-bottom:2px; }
-.draft-pre { white-space:pre-wrap; font-family:inherit; font-size:.85rem; line-height:1.5; margin:9px 0 0; color:var(--ink); word-break:break-word; }
+.draft-pre { white-space:pre-wrap; font-family:inherit; font-size:.85rem; line-height:1.5; margin:9px 0 0; color:var(--ink); overflow-wrap:anywhere; }
 .draft-actions { display:flex; gap:8px; margin-top:13px; flex-wrap:wrap; }
 .draft-actions .btn-primary { text-decoration:none; }
 

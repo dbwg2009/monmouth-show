@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Viewer } from '../types.ts';
 import { useStore } from './store.tsx';
 import { Icon } from './ui.tsx';
@@ -85,6 +85,12 @@ export function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // If the viewer switches away from Dan while on a Dan-only tab, drop back home
+  // so restricted content isn't left on screen.
+  useEffect(() => {
+    if (viewer !== 'Dan' && (tab === 'learning' || tab === 'stageplot')) setTab('home');
+  }, [viewer, tab]);
+
   if (!viewer) return <ViewerPicker onPick={(v) => setViewer(v)} />;
 
   const me = VIEWERS.find((v) => v.name === viewer);
@@ -123,8 +129,8 @@ export function App() {
         {tab === 'sitemap'    && <SiteMap />}
         {tab === 'scratchpad' && <Scratchpad />}
         {tab === 'emails'     && <Emails />}
-        {tab === 'learning'   && <LearningTrack />}
-        {tab === 'stageplot'  && <StagePlot />}
+        {tab === 'learning'   && viewer === 'Dan' && <LearningTrack />}
+        {tab === 'stageplot'  && viewer === 'Dan' && <StagePlot />}
         {tab === 'settings'   && <Settings />}
       </main>
 
