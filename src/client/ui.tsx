@@ -49,6 +49,8 @@ const PATHS: Record<string, React.ReactNode> = {
   note: <><path d="M5 3h11l4 4v14H5z" /><path d="M16 3v4h4M8 13h8M8 17h6" /></>,
   home: <><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></>,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 00-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1l-.3-2.5h-4l-.3 2.5a7 7 0 00-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.3 2.5h4l.3-2.5a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5a7 7 0 00.1-1z" /></>,
+  graduation: <><path d="M22 9L12 4 2 9l10 5 10-5z" /><path d="M6 11v5a6 3 0 0012 0v-5" /><path d="M22 9v5" /></>,
+  sliders: <><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" /><path d="M1 14h6M9 8h6M17 16h6" /></>,
 };
 
 export function Icon({ name, size = 22, className }: { name: keyof typeof PATHS | string; size?: number; className?: string }) {

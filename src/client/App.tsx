@@ -12,10 +12,13 @@ import { Walkaround } from './Walkaround.tsx';
 import { SiteMap } from './SiteMap.tsx';
 import { Scratchpad } from './Scratchpad.tsx';
 import { Emails } from './Emails.tsx';
+import { LearningTrack } from './LearningTrack.tsx';
+import { StagePlot } from './StagePlot.tsx';
 import { Settings } from './Settings.tsx';
 
 type Tab = 'home' | 'running' | 'acts' | 'contacts'
-  | 'tasks' | 'chase' | 'walkaround' | 'sitemap' | 'scratchpad' | 'emails' | 'settings';
+  | 'tasks' | 'chase' | 'walkaround' | 'sitemap' | 'scratchpad' | 'emails'
+  | 'learning' | 'stageplot' | 'settings';
 
 const VIEWERS: { name: Viewer; role: string; initials: string }[] = [
   { name: 'Dan',   role: 'Tech Manager',         initials: 'D' },
@@ -30,13 +33,15 @@ const PRIMARY: { id: Tab; label: string; icon: string }[] = [
   { id: 'contacts', label: 'Contacts', icon: 'users' },
 ];
 
-const MORE: { id: Tab; label: string; icon: string; hint: string }[] = [
+const MORE: { id: Tab; label: string; icon: string; hint: string; danOnly?: boolean }[] = [
   { id: 'chase',      label: 'Chase list',     icon: 'list',  hint: 'Outstanding info to collect' },
   { id: 'tasks',      label: 'Tasks',          icon: 'check', hint: 'Shared to-do checklist' },
   { id: 'walkaround', label: 'Walk-around',    icon: 'note',  hint: 'Site walk notes with BSB' },
   { id: 'sitemap',    label: 'Site map',       icon: 'map',   hint: 'Band Stand & key locations' },
   { id: 'scratchpad', label: 'Scratchpad',     icon: 'edit',  hint: 'Shared notes' },
   { id: 'emails',     label: 'Emails',         icon: 'mail',  hint: 'Synced act email threads' },
+  { id: 'learning',   label: 'Learning track', icon: 'graduation', hint: 'Live-sound skills to build', danOnly: true },
+  { id: 'stageplot',  label: 'Stage plot',     icon: 'sliders',    hint: 'Input-list template',        danOnly: true },
   { id: 'settings',   label: 'Settings',       icon: 'settings', hint: 'Sync, export, account' },
 ];
 
@@ -84,7 +89,8 @@ export function App() {
 
   const me = VIEWERS.find((v) => v.name === viewer);
   if (!me) return <ViewerPicker onPick={(v) => setViewer(v)} />;
-  const inMore = MORE.some((m) => m.id === tab);
+  const moreItems = MORE.filter((m) => !m.danOnly || viewer === 'Dan');
+  const inMore = moreItems.some((m) => m.id === tab);
 
   const go = (t: Tab) => { setTab(t); setMoreOpen(false); };
 
@@ -117,6 +123,8 @@ export function App() {
         {tab === 'sitemap'    && <SiteMap />}
         {tab === 'scratchpad' && <Scratchpad />}
         {tab === 'emails'     && <Emails />}
+        {tab === 'learning'   && <LearningTrack />}
+        {tab === 'stageplot'  && <StagePlot />}
         {tab === 'settings'   && <Settings />}
       </main>
 
@@ -125,7 +133,7 @@ export function App() {
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <div className="sheet-handle" />
             <div className="sheet-grid">
-              {MORE.map((m) => (
+              {moreItems.map((m) => (
                 <button key={m.id} className={`sheet-item ${tab === m.id ? 'active' : ''}`} onClick={() => go(m.id)}>
                   <span className="sheet-ico"><Icon name={m.icon} size={20} /></span>
                   <span className="sheet-text"><strong>{m.label}</strong><span>{m.hint}</span></span>
