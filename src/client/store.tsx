@@ -136,12 +136,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // ── Outbox flush ───────────────────────────────────────────────────────────
   const flush = useCallback(async () => {
     if (flushing.current || !navigator.onLine) return;
-    let queue = loadOutbox();
-    if (queue.length === 0) return;
+    if (loadOutbox().length === 0) return;
     flushing.current = true;
     try {
-      while (queue.length > 0) {
-        const item = queue[0]!;
+      let working = loadOutbox();
+      while (working.length > 0) {
+        const item = working[0]!;
         try {
           const init: RequestInit = { method: item.method };
           if (item.body !== undefined) {
@@ -149,12 +149,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             init.body = JSON.stringify(item.body);
           }
           const res = await fetch(item.path, init);
-          // Any server response (even 4xx/5xx) means it was delivered — drop it
-          // so the queue can't get stuck. Only a thrown error (network) keeps it.
-          void res;
-          queue = queue.slice(1);
-          saveOutbox(queue);
-          setPending(queue.length);
+          // Transient server errors (5xx / rate limit): stop and retry later so
+          // we don't silently drop unsynced changes.
+          if (!res.ok && (res.status >= 500 || res.status === 429)) break;
+          // Success, or a permanent 4xx a retry won't fix: drop this item.
+          // Re-read the outbox first so items enqueued during the await aren't
+          // clobbered by a stale snapshot.
+          const remaining = loadOutbox().filter((q) => q.uid !== item.uid);
+          saveOutbox(remaining);
+          setPending(remaining.length);
+          working = remaining;
         } catch {
           // network error — stop, retry later
           break;

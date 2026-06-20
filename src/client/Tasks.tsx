@@ -66,7 +66,7 @@ export function Tasks() {
                   <span className="check-label">{t.title}</span>
                   <span className="check-meta">
                     {t.assignee && <span className={`who who-${t.assignee.toLowerCase()}`}>{t.assignee}</span>}
-                    {t.dueDate && t.dueDate !== SHOW_DATE && <span className="due">{new Date(t.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                    {t.dueDate && t.dueDate !== SHOW_DATE && <span className="due">{new Date(`${t.dueDate}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
                   </span>
                 </button>
               </div>

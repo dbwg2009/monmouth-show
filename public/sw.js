@@ -10,7 +10,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
   self.skipWaiting();
 });
 
@@ -53,7 +53,7 @@ self.addEventListener('fetch', (e) => {
       const network = fetch(request).then((res) => {
         if (res.ok) { const clone = res.clone(); caches.open(CACHE).then((c) => c.put(request, clone)); }
         return res;
-      }).catch(() => cached);
+      }).catch(() => cached || Response.error());
       return cached || network;
     }),
   );

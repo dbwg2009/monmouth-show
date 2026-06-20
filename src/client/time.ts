@@ -1,4 +1,5 @@
-// Show-day time helpers. All times are Europe/London on the show date.
+// Show-day time helpers. Times use the device clock; the show and its whole team
+// (Dan, Jacob, Steph) are in the UK, so device-local time matches Europe/London.
 
 export const SHOW_DATE = '2026-08-16';
 export const SHOW_DATE_LABEL = 'Sunday 16 August 2026';

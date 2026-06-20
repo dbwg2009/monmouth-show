@@ -8,7 +8,7 @@ import {
 } from './time.ts';
 
 const PREVIEW_KEY = 'bandstand_preview_live';
-const minsOfDay = (iso: string) => { const d = new Date(iso); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; };
+const minsOfDay = (iso: string) => nowMins(new Date(iso));
 
 export function Home({ goTo }: { goTo: (t: any) => void }) {
   const now = useClock(1000);

@@ -261,9 +261,14 @@ app.post('/timeline/:id/finish', async (c) => {
     .where(eq(timelineSlots.id, id))
     .returning();
   if (!row) return c.json({ ok: false, error: 'Not found' }, 404);
-  await db.insert(settings)
-    .values({ key: 'live_current_slot_id', value: '', updatedAt: ts })
-    .onConflictDoUpdate({ target: settings.key, set: { value: '', updatedAt: ts } });
+  // Only clear the live pointer if the slot being finished is the current one,
+  // so finishing an older slot doesn't wipe the pointer to a live act.
+  const ptr = await db.select().from(settings).where(eq(settings.key, 'live_current_slot_id'));
+  if (ptr[0]?.value === String(id)) {
+    await db.insert(settings)
+      .values({ key: 'live_current_slot_id', value: '', updatedAt: ts })
+      .onConflictDoUpdate({ target: settings.key, set: { value: '', updatedAt: ts } });
+  }
   return c.json({ ok: true, data: row });
 });
 

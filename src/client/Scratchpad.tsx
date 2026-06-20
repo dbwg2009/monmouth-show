@@ -10,6 +10,9 @@ export function Scratchpad() {
   const timer = useRef<number | undefined>(undefined);
   const focused = useRef(false);
 
+  // Clear any pending debounce timer on unmount so it can't fire stale updates.
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
   // Pull in remote updates from sync when the user isn't actively typing.
   useEffect(() => {
     if (!focused.current && remote !== text) setText(remote);

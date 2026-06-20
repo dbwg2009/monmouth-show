@@ -178,7 +178,7 @@ function ChannelsEditor({ act }: { act: Act }) {
     <div className="channels">
       {rows.length === 0 && <p className="muted-sm">No channels yet. Build the patch list BSB will need.</p>}
       {rows.map((c) => (
-        <ChannelRow key={c.id} ch={c} onPatch={(p) => patch('channels', c.id, { ...p, updatedBy: viewer })} onDelete={() => remove('channels', c.id)} />
+        <ChannelRow key={`${c.id}:${c.updatedAt}`} ch={c} onPatch={(p) => patch('channels', c.id, { ...p, updatedBy: viewer })} onDelete={() => remove('channels', c.id)} />
       ))}
       <div className="channel-add">
         <span className="ch-no">{Math.max(0, ...rows.map((r) => r.channelNo)) + 1}</span>

@@ -6,6 +6,11 @@ import type { Viewer } from '../types.ts';
 const VIEWERS: Viewer[] = ['Dan', 'Jacob', 'Steph'];
 const PREVIEW_KEY = 'bandstand_preview_live';
 
+// localStorage can throw (private mode / blocked storage) — guard every access.
+const safeGet = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
+const safeSet = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } };
+const safeRemove = (k: string) => { try { localStorage.removeItem(k); } catch { /* storage blocked */ } };
+
 function parseContacts(v: string | undefined): string[] {
   if (!v) return [];
   try { const a = JSON.parse(v); return Array.isArray(a) ? a : []; } catch { return v.split(/[,\n]/).map((s) => s.trim()).filter(Boolean); }
@@ -15,7 +20,7 @@ export function Settings() {
   const { db, viewer, setViewer, online, pending, lastSync, refresh, setSetting } = useStore();
   const [label, setLabel] = useState(db.settings.gmail_label ?? 'MonShow');
   const [contacts, setContacts] = useState(parseContacts(db.settings.gmail_contacts).join('\n'));
-  const [preview, setPreview] = useState(localStorage.getItem(PREVIEW_KEY) === '1');
+  const [preview, setPreview] = useState(safeGet(PREVIEW_KEY) === '1');
   const [syncing, setSyncing] = useState(false);
 
   function saveGmail() {
@@ -25,13 +30,16 @@ export function Settings() {
   }
   function togglePreview() {
     const next = !preview; setPreview(next);
-    if (next) localStorage.setItem(PREVIEW_KEY, '1'); else localStorage.removeItem(PREVIEW_KEY);
+    if (next) safeSet(PREVIEW_KEY, '1'); else safeRemove(PREVIEW_KEY);
   }
-  async function syncNow() { setSyncing(true); await refresh(); setSyncing(false); }
+  async function syncNow() {
+    setSyncing(true);
+    try { await refresh(); } finally { setSyncing(false); }
+  }
   function resetLocal() {
     if (!confirm('Clear this device\'s local copy and reload? Unsynced offline changes will be lost.')) return;
-    localStorage.removeItem('bandstand_cache_v1');
-    localStorage.removeItem('bandstand_outbox_v1');
+    safeRemove('bandstand_cache_v1');
+    safeRemove('bandstand_outbox_v1');
     location.reload();
   }
 
