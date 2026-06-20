@@ -17,7 +17,7 @@ function parseContacts(v: string | undefined): string[] {
 }
 
 export function Settings() {
-  const { db, viewer, setViewer, online, pending, lastSync, refresh, setSetting } = useStore();
+  const { db, viewer, setViewer, online, pending, lastSync, refresh, setSetting, patch } = useStore();
   const [label, setLabel] = useState(db.settings.gmail_label ?? 'MonShow');
   const [contacts, setContacts] = useState(parseContacts(db.settings.gmail_contacts).join('\n'));
   const [preview, setPreview] = useState(safeGet(PREVIEW_KEY) === '1');
@@ -41,6 +41,12 @@ export function Settings() {
     safeRemove('bandstand_cache_v1');
     safeRemove('bandstand_outbox_v1');
     location.reload();
+  }
+  function resetActStatuses() {
+    const changed = db.acts.filter((a) => a.status !== 'expected');
+    if (changed.length === 0) { alert('All acts are already set to Expected.'); return; }
+    if (!confirm(`Reset all ${db.acts.length} acts back to “Expected”? This clears every act's arrival / soundcheck / done progress for everyone.`)) return;
+    changed.forEach((a) => patch('acts', a.id, { status: 'expected', updatedBy: viewer }));
   }
 
   return (
@@ -94,6 +100,12 @@ export function Settings() {
           <button className="btn-primary" onClick={saveGmail}>Save Gmail settings</button>
         </div>
         <p className="muted-sm">The background worker syncs matching threads every 15 minutes into the Emails tab.</p>
+      </section>
+
+      <section className="card">
+        <div className="card-head"><h3>Show day</h3></div>
+        <button className="btn-secondary" onClick={resetActStatuses}><Icon name="refresh" size={15} /> Reset all acts to “Expected”</button>
+        <p className="muted-sm">Sets every act back to not-arrived — handy after a rehearsal run or to start the day with a clean slate.</p>
       </section>
 
       <section className="card">
