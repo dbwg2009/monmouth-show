@@ -42,6 +42,8 @@ function Thread({ thread, online }: { thread: EmailThread; online: boolean }) {
 
   useEffect(() => {
     let alive = true;
+    setLoading(true);
+    setMessages(null);
     (async () => {
       try {
         const res = await fetch(`/api/emails/${thread.id}`);

@@ -141,6 +141,7 @@ export const locations = sqliteTable('locations', {
   updatedAt: text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
   updatedBy: text('updated_by'),
 }, () => [
+  check('locations_category_valid', sql.raw("category IN ('stage','facility','access','safety','place')")),
   check('locations_updated_by_viewer', viewerCheck('updated_by')),
 ]);
 

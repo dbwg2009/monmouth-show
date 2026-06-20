@@ -35,7 +35,7 @@ export function Walkaround() {
               <div className="note-body">{n.body}</div>
               <div className="note-foot">
                 <span>{n.author ?? 'Someone'} · {fmtWhen(n.createdAt)}</span>
-                <button className="row-del" onClick={() => remove('walkaroundNotes', n.id)} aria-label="Delete"><Icon name="x" size={14} /></button>
+                <button className="row-del" onClick={() => { if (confirm('Delete this walk-around note?')) remove('walkaroundNotes', n.id); }} aria-label="Delete"><Icon name="x" size={14} /></button>
               </div>
             </div>
           ))}

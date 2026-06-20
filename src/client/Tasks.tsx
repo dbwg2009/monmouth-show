@@ -59,7 +59,7 @@ export function Tasks() {
             <div className="sub-head">{b.label}</div>
             {list.map((t) => (
               <div key={t.id} className={`check-row ${t.done ? 'done' : ''}`}>
-                <button className={`checkbox ${t.done ? 'on' : ''}`} onClick={() => patch('tasks', t.id, { done: !t.done, doneBy: !t.done ? viewer : null })}>
+                <button className={`checkbox ${t.done ? 'on' : ''}`} onClick={() => { const done = !t.done; patch('tasks', t.id, { done, doneAt: done ? new Date().toISOString() : null, doneBy: done ? viewer : null, updatedBy: viewer }); }}>
                   {t.done && <Icon name="check" size={14} />}
                 </button>
                 <button className="check-main" onClick={() => openEdit(t)}>

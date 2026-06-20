@@ -107,7 +107,7 @@ app.patch('/acts/:id', async (c) => {
   const body = await c.req.json<Record<string, unknown>>();
   const db = createDb(c.env.DB);
   const patch: Record<string, unknown> = { ...body, updatedAt: now() };
-  delete patch.id; delete patch.createdAt;
+  delete patch.id; delete patch.createdAt; delete patch.statusUpdatedAt;
   if (body.status !== undefined) patch.statusUpdatedAt = now();
   const [row] = await db.update(acts).set(patch).where(eq(acts.id, id)).returning();
   if (!row) return c.json({ ok: false, error: 'Not found' }, 404);
