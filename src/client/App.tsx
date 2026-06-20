@@ -16,8 +16,8 @@ import { LearningTrack } from './LearningTrack.tsx';
 import { StagePlot } from './StagePlot.tsx';
 import { Settings } from './Settings.tsx';
 
-type Tab = 'home' | 'running' | 'acts' | 'contacts'
-  | 'tasks' | 'chase' | 'walkaround' | 'sitemap' | 'scratchpad' | 'emails'
+type Tab = 'home' | 'running' | 'acts' | 'tasks'
+  | 'contacts' | 'chase' | 'walkaround' | 'sitemap' | 'scratchpad' | 'emails'
   | 'learning' | 'stageplot' | 'settings';
 
 const VIEWERS: { name: Viewer; role: string; initials: string }[] = [
@@ -30,12 +30,12 @@ const PRIMARY: { id: Tab; label: string; icon: string }[] = [
   { id: 'home',     label: 'Today',   icon: 'home' },
   { id: 'running',  label: 'Order',   icon: 'music' },
   { id: 'acts',     label: 'Acts',    icon: 'mic' },
-  { id: 'contacts', label: 'Contacts', icon: 'users' },
+  { id: 'tasks', label: 'Tasks', icon: 'check' },
 ];
 
 const MORE: { id: Tab; label: string; icon: string; hint: string; danOnly?: boolean }[] = [
   { id: 'chase',      label: 'Chase list',     icon: 'list',  hint: 'Outstanding info to collect' },
-  { id: 'tasks',      label: 'Tasks',          icon: 'check', hint: 'Shared to-do checklist' },
+  { id: 'contacts',   label: 'Contacts',       icon: 'users', hint: 'Shared to-do checklist' },
   { id: 'walkaround', label: 'Walk-around',    icon: 'note',  hint: 'Site walk notes with BSB' },
   { id: 'sitemap',    label: 'Site map',       icon: 'map',   hint: 'Band Stand & key locations' },
   { id: 'scratchpad', label: 'Scratchpad',     icon: 'edit',  hint: 'Shared notes' },
