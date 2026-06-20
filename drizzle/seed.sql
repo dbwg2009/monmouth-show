@@ -74,7 +74,7 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   'Vipers and Guests',
   'Tony Summers',
   'borderlines2023@gmail.com',
-  NULL,
+  'tonysummers967@gmail.com',
   '07840440304',
   1, -- full band, house PA + backline
   6,
@@ -83,10 +83,10 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   '4 sockets (guitar amp, bass amp, keys, mixer)',
   30,
   '7',
-  NULL,
+  17500,
   1,
   'expected',
-  'Rock/covers band (formerly Borderlines — line-up changed). Requested at least 15 min setup; allow the full 30. Tony Summers was ex-Chair of Off Centre. Fee and full setup details to be forwarded by Steph — confirm before the day.',
+  'Confirmed 7-piece R&B/pop (formerly Borderlines). 45-min set from ~14:45, 15 min setup, £175 agreed. Bring own amps, mics & stands; need house PA + engineer. Tony Summers (tonysummers967@gmail.com / 07840 440304); Angela Arnott (bass) muso69@gmail.com. Line-up: Tim Buckmaster (lead gtr), Angela Arnott (bass), Mike Hopkins (drums), Tony Summers (rhythm gtr/vox), Mike Haney (harmonica), Niki Felstead (vox), Richard Harrison (sax/vox).',
   NULL,
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
@@ -107,7 +107,7 @@ INSERT INTO acts (name, contact_name, contact_email, contact_email_2, contact_ph
   NULL,
   1,
   'expected',
-  'Newly formed U3A band — closes the show from 16:00 and would ideally run late (~1 hour, open-ended). Brings own PA. Second contact: Averil MacDonald. Likely playing while vintage cars circle the Main Ring.',
+  'Newly formed U3A 4-piece — closes the show from 16:00, ideally ~1 hour (open-ended); will set up as soon as Vipers finish (~15:30). Brings own kit incl PA. Second contact: Prof Averil MacDonald (a.m.macdonald@reading.ac.uk / 07927 414273). Likely playing while vintage cars circle the Main Ring.',
   'https://monstock.org/band/crossroads/',
   '2026-06-01T00:00:00.000Z',
   '2026-06-01T00:00:00.000Z'
@@ -174,7 +174,6 @@ INSERT INTO chase_items (act_id, label, done, sort_order, created_at, updated_at
 (2, 'Phone contact for Monmouth Town Band', 0, 10, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 (3, 'Ian MacIntyre''s email address', 0, 20, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 (3, 'Confirm MVC PA / tech requirements (struggled last year)', 0, 30, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
-(4, 'Vipers + Guests fee & full setup details (Steph forwarding)', 0, 40, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 (1, 'Rock Choir final numbers (40-80)', 0, 50, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 (NULL, 'BSB PA/stage build date', 0, 60, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z'),
 (NULL, 'Who is providing chairs', 0, 70, '2026-06-01T00:00:00.000Z', '2026-06-01T00:00:00.000Z');
